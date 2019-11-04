@@ -1,0 +1,67 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title *ngIf="newFacture.idApp==null">Nouvelle facture</ion-title>
+    <ion-title *ngIf="newFacture.idApp!=null">Modification de facture</ion-title>
+    <ion-buttons slot="start">
+      <ion-button (click)="back()">
+        <ion-icon name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!--boutons d'ajout de facture-->
+  <ion-card>
+    <ion-item>
+      <ion-tab-button (click)="takePic('photo')">
+        <ion-icon name="camera" size="large" color="medium"></ion-icon>
+      </ion-tab-button>
+      <ion-tab-button (click)="takePic('pdf')">
+        <ion-icon name="folder" size="large" color="medium"></ion-icon>
+      </ion-tab-button>
+      <ion-tab-button (click)="takePic('image')">
+        <ion-icon name="images" size="large" color="medium"></ion-icon>
+      </ion-tab-button>
+    </ion-item>
+  </ion-card>
+
+  <!-- Liste des factures chargés depuis les boutons-->
+  <ion-card *ngIf="newFacture.photos">
+    <ion-item>
+      <ion-label color="primary" class="small-title-facture">{{newFacture.photoTitle}}</ion-label>
+    </ion-item>
+  </ion-card>
+
+  <!--Formulaire de saisie-->
+  <form [formGroup]="new_item_form" (submit)="createFacture(new_item_form.value)">
+    <ion-item>
+      <ion-label color="primary" position="floating">Title</ion-label>
+      <ion-input type="text" formControlName="title" value="{{newFacture.title}}" required></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label color="primary" position="floating">Emetteur</ion-label>
+      <ion-input type="text" formControlName="emetteur" value="{{newFacture.emetteur}}" required></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label color="primary" position="floating">Date de la facture</ion-label>
+      <ion-input type="date" formControlName="dateFacture" value="{{ newFacture.dateFacture | date:'yyyy-MM-dd' }}" required></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label color="primary" position="floating">Prix HT</ion-label>
+      <ion-input type="number" formControlName="prixHT" value="{{newFacture.prixHT}}"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label color="primary" position="floating">Prix TTC</ion-label>
+      <ion-input type="number" formControlName="prixTTC" value="{{newFacture.prixTTC}}"></ion-input>
+    </ion-item>
+    <ion-button *ngIf="newFacture.idApp==null" class="submit-btn" expand="block" type="submit"
+                [disabled]="(!new_item_form.valid)||(newFacture.photoTitle==null)">Ajouter</ion-button>
+    <ion-button *ngIf="newFacture.idApp!=null" class="submit-btn" expand="block" type="submit">Update</ion-button>
+  </form>
+  <ion-button ion-button full (click)="generatePdf()" >generate pdf</ion-button>
+</ion-content>
+
+<ion-footer>
+  <app-footer-nav></app-footer-nav>
+</ion-footer>

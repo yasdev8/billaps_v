@@ -1,0 +1,85 @@
+<ion-header>
+  <ion-toolbar>
+    <!-- <ion-buttons > -->
+    <div class="plusClass" slot="end">
+      <ion-icon name="add" expand="icon-only" color="success"> </ion-icon>
+    </div>
+    <!-- </ion-buttons> -->
+    <ion-title color="light">
+      Contacts
+    </ion-title>
+  </ion-toolbar>
+
+  <!-- ************************************
+    boutons des messages, contacts et groupes
+  -->
+  <ion-toolbar>
+    <ion-segment mode="md" (ionChange)="segmentChanged($event)" class="ion-padding">
+      <ion-segment-button mode="md" value="chat" checked fixed>
+        <div class="contentCenter">
+          <ion-icon name="chatboxes" slot="start" class="padding_right tab-icon"></ion-icon>
+          <ion-text slot=end>Messages</ion-text>
+        </div>
+      </ion-segment-button>
+
+      <ion-segment-button mode="md" value="friends">
+        <div class="contentCenter">
+          <ion-icon name="person" slot="start" class="padding_right tab-icon"></ion-icon>
+          <ion-text slot=end>Contacts</ion-text>
+        </div>
+      </ion-segment-button>
+
+      <ion-segment-button mode="md" value="group">
+        <div class="contentCenter">
+          <ion-icon name="contacts" slot="start" class="padding_right tab-icon"></ion-icon>
+          <ion-text slot=end>Groupes</ion-text>
+        </div>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+
+</ion-header>
+
+
+<ion-content>
+
+  <ion-searchbar mode="md" placeholder="Search your friend"></ion-searchbar>
+
+  <!-- <content> -->
+  <ion-list *ngIf="segmentTab == 'chat' " class="ion-no-padding">
+
+    <ion-item *ngFor="let chat of chatData"  lines="none">
+      <div class="borderBottomLine"></div>
+      <div class="listSection">
+        <div class="UserimgSection">
+          <ion-avatar class="chatImage" slot="start">
+            <ion-img [src]="chat.image"></ion-img>
+            <span class="onlineOffline_icon" [ngStyle]="{'background-color':(chat.status === 'online'? '#4cd137' : '#c23616')}"></span>
+          </ion-avatar>
+        </div>
+        <div class="usernameSection ion-padding ion-padding-start">
+          <h5>
+            <ion-icon *ngIf="chat.group" name="people" color="medium"></ion-icon>
+            <ion-icon name="microphone" *ngIf="chat.broadcast" color="medium"></ion-icon>
+            {{chat.name}}
+          </h5>
+          <p class="descText ion-no-margin ion-no-padding">{{chat.description}}</p>
+        </div>
+      </div>
+      <div slot="end" class="lastSection">
+        <ion-note *ngIf="chat.badge || !chat.time" class="sendTime">{{chat.sendTime}}</ion-note>
+        <ion-badge slot="end" class="userBadge" *ngIf="chat.badge">{{chat.badge}}</ion-badge>
+        <ion-note slot="end" *ngIf="chat.time">{{chat.time}}</ion-note>
+      </div>
+      </ion-item>
+
+
+
+  </ion-list>
+  <!-- </content> -->
+</ion-content>
+
+
+<ion-footer>
+    <app-footer-nav></app-footer-nav>
+</ion-footer>

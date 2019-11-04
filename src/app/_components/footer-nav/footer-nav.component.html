@@ -1,0 +1,44 @@
+
+  <ion-tab-bar slot="bottom">
+    <ion-tab-button (click)="navigation('home')">
+      <ion-icon name="home" color="primary" *ngIf="getCurrentPage()=='home'"></ion-icon>
+      <ion-icon name="home" *ngIf="getCurrentPage()!='home'"></ion-icon>
+      <ion-label color="primary" *ngIf="getCurrentPage()=='home'">Home</ion-label>
+      <ion-label *ngIf="getCurrentPage()!='home'">Home</ion-label>
+    </ion-tab-button>
+    <ion-tab-button (click)="navigation('contacts')">
+      <ion-icon name="contacts" color="primary" *ngIf="getCurrentPage()=='contacts'"></ion-icon>
+      <ion-icon name="contacts" *ngIf="getCurrentPage()!='contacts'"></ion-icon>
+      <ion-label color="primary" *ngIf="getCurrentPage()=='contacts'">contacts</ion-label>
+      <ion-label *ngIf="getCurrentPage()!='contacts'">contacts</ion-label>
+    </ion-tab-button>
+    <ion-tab-button (click)="navigation('factures')">
+      <ion-icon name="paper" color="primary" *ngIf="getCurrentPage()=='factures'"></ion-icon>
+      <ion-icon name="paper" *ngIf="getCurrentPage()!='factures'"></ion-icon>
+      <ion-label color="primary" *ngIf="getCurrentPage()=='factures'">Factures</ion-label>
+      <ion-label *ngIf="getCurrentPage()!='factures'">Factures</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button (click)="navigation('test-chat')">
+      <ion-icon name="mail" color="primary" *ngIf="getCurrentPage()=='test-chat'"></ion-icon>
+      <ion-icon name="mail" *ngIf="getCurrentPage()!='test-chat'"></ion-icon>
+      <ion-label color="primary" *ngIf="getCurrentPage()=='test-chat'">test-chat</ion-label>
+      <ion-label *ngIf="getCurrentPage()!='test-chat'">test-chat</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button (click)="navigation('fcm')">
+      <ion-icon name="mail" color="primary" *ngIf="getCurrentPage()=='fcm'"></ion-icon>
+      <ion-icon name="mail" *ngIf="getCurrentPage()!='fcm'"></ion-icon>
+      <ion-label color="primary" *ngIf="getCurrentPage()=='fcm'">fcm</ion-label>
+      <ion-label *ngIf="getCurrentPage()!='fcm'">fcm</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button (click)="navigation('parametres')">
+      <ion-icon name="settings" color="primary" *ngIf="getCurrentPage()=='parametres'"></ion-icon>
+      <ion-icon name="settings" *ngIf="getCurrentPage()!='parametres'"></ion-icon>
+      <ion-label color="primary" *ngIf="getCurrentPage()=='parametres'">Paramètres</ion-label>
+      <ion-label *ngIf="getCurrentPage()!='parametres'">Paramètres</ion-label>
+    </ion-tab-button>
+  </ion-tab-bar>
+
+

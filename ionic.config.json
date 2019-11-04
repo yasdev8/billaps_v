@@ -1,0 +1,7 @@
+{
+  "name": "billaps_v0.1",
+  "integrations": {
+    "cordova": {}
+  },
+  "type": "angular"
+}

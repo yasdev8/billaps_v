@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "592542948699",
+    "firebase_url": "https://billaps-v0.firebaseio.com",
+    "project_id": "billaps-v0",
+    "storage_bucket": "billaps-v0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:592542948699:android:d81440dca6410b1f2a0e7e",
+        "android_client_info": {
+          "package_name": "yasdev8.billaps"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "592542948699-di1igr8oulbt06v5j0caihq0jmeggbdi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBY-YYSuU0t9Vq1IbYp-sQfsGwzh-cpC_c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "592542948699-di1igr8oulbt06v5j0caihq0jmeggbdi.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "592542948699-u4cunug8ojd58mh6bc7oogurhe056a61.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "yasdev8.billaps"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

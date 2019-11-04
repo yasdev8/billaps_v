@@ -1,0 +1,51 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="presentPopover($event)">
+        <ion-icon name="settings"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Factures</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="onNewFacture()">
+        <ion-icon slot="icon-only" name="add"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <ion-item-sliding *ngFor="let f of factures" (ionSwipe)="delete(f)">
+      <ion-item (click)="onDetailFacture(f)" >
+        <!--
+        <ion-label>
+          <h2>{{f.title}}</h2>
+          <p>{{f.photoTitle}}</p>
+        </ion-label>
+        -->
+        <div class="titleSection ion-padding ion-padding-start">
+          <h5>
+            {{f.title}}
+          </h5>
+          <p class="descText ion-no-margin ion-no-padding">{{f.photoTitle}}</p>
+        </div>
+        <div slot="end" class="lastSection">
+          <ion-note>{{f.dateAjout.getDate()+'/'+(f.dateAjout.getMonth()+1)+'/'+
+          f.dateAjout.getFullYear()}}</ion-note>
+        </div>
+      </ion-item>
+      <ion-item-options side="end">
+        <ion-item-option color="danger" (click)="delete(f)" expandable>
+          Supprimer
+        </ion-item-option>
+      </ion-item-options>
+    </ion-item-sliding>
+  </ion-list>
+
+
+</ion-content>
+
+<ion-footer>
+  <app-footer-nav></app-footer-nav>
+</ion-footer>

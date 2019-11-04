@@ -1,0 +1,23 @@
+.titleSection{
+  overflow: hidden;
+  padding-top: 0;
+  padding-bottom: 2px;
+}
+
+.descText{
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  width:100%;
+  color:#BFC3C6;
+  font-size: 16px;
+}
+
+.lastSection{
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  height: 73%;
+  padding-top:2px;
+}
