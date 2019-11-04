@@ -44,6 +44,7 @@
     "cordova-sqlite-storage": "^3.4.0",
     "core-js": "^2.5.4",
     "firebase": "^7.2.1",
+    "ngx-order-pipe": "^2.0.4",
     "pdfmake": "^0.1.60",
     "rxjs": "~6.5.1",
     "tslib": "^1.9.0",

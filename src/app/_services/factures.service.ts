@@ -8,6 +8,7 @@ import {FileOpener} from "@ionic-native/file-opener/ngx";
 import {AngularFireStorage} from "@angular/fire/storage";
 import {Router} from '@angular/router';
 import {forEach} from '@angular-devkit/schematics';
+import {OrderPipe} from 'ngx-order-pipe';
 
 @Injectable({
   providedIn: 'root'
@@ -37,7 +38,8 @@ export class FacturesService {
       public loadingController: LoadingController,
       public afSG: AngularFireStorage,
       public alertController: AlertController,
-      private platform:Platform
+      private platform:Platform,
+      private orderPipe:OrderPipe
       ) { }
 
   //on récupère la liste des factures stockées en bdd appli (lancé à l'ouverture)
@@ -70,6 +72,9 @@ export class FacturesService {
            this.facturesArbre=data;
          });
       }
+
+      //on ordonne les factures
+      await this.orderFactures();
 
       //on retourne les factures
       return this.factures.slice();
@@ -261,5 +266,24 @@ export class FacturesService {
       });
 
       return facturesArbre;
+  }
+
+  private orderFactures() {
+    //on ordonne les factures affichées
+    if (this.typeAffichage = 'liste') {
+      if (this.orderAffichage = 'dateAjoutDesc') {
+        this.factures = this.orderPipe.transform(this.factures, 'dateAjout', false);
+      } else if (this.orderAffichage = 'dateAjoutAsc') {
+        this.factures = this.orderPipe.transform(this.factures, 'dateAjout', true);
+      } else if (this.orderAffichage = 'dateFactureDesc') {
+        this.factures = this.orderPipe.transform(this.factures, 'dateFacture', false);
+      } else if (this.orderAffichage = 'dateFactureAsc') {
+        this.factures = this.orderPipe.transform(this.factures, 'dateFacture', true);
+      }
+    } else {
+      //on ordonne les factures en arbres
+      //TODO ordonner les factures
+    }
+
   }
 }

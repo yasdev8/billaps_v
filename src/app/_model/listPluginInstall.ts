@@ -30,3 +30,6 @@
 //Email Composer
 //ionic cordova plugin add cordova-plugin-email-composer
 //npm install @ionic-native/email-composer
+
+//order-pipe
+//npm install ngx-order-pipe --save
