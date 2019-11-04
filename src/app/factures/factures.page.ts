@@ -43,7 +43,7 @@ export class FacturesPage implements OnInit {
     });
     //on récupère l'arbre du service
     this.facturesArbre=this.facturesService.facturesArbre;
-    //on récupère l'affichage
+    //on récupère l'affichage type et ordre
     this.typeAffichage=this.facturesService.typeAffichage;
     this.orderAffichage=this.facturesService.orderAffichage;
   }
