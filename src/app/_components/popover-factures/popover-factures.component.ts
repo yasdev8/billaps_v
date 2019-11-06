@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import {PopoverController} from '@ionic/angular';
+import {LoadingController, PopoverController} from '@ionic/angular';
 import {FacturesService} from '../../_services/factures.service';
+
 
 @Component({
   selector: 'app-popover-factures',
@@ -16,7 +17,8 @@ export class PopoverFacturesComponent implements OnInit {
 
   constructor(
       public popoverController:PopoverController,
-      public facturesService:FacturesService
+      public facturesService:FacturesService,
+      public loadingController: LoadingController,
   ) { }
 
   ngOnInit() {
@@ -37,9 +39,17 @@ export class PopoverFacturesComponent implements OnInit {
 
   //on valide la modification d'affichage
   async raffraichir() {
+    const loading = await this.loadingController.create({
+      //spinner: null,
+      message: 'Chargement',
+      translucent: true,
+    });
+    loading.present();
     //on met ajour l'affichage des facture
-    //await this.facturesService.raffraichirAffichage(this.typeAffichage,this.orderAffichage);
+    await this.facturesService.raffraichirAffichage(this.typeAffichage,this.orderAffichage);
+
     //on ferme la pop-up
-    this.popoverController.dismiss();
+    await this.popoverController.dismiss(true);
+    loading.dismiss();
   }
 }

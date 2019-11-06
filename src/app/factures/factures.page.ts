@@ -30,22 +30,22 @@ export class FacturesPage implements OnInit {
 
   //cette méthode se lance à chaque ouverture de l'écran, on récupère donc toute les factures
   ionViewWillEnter(){
-    //on charge les factures ou on charge les arbres
-    this.factures=this.facturesService.factures;
-    this.facturesArbre=this.facturesService.facturesArbre;
-    this.onGetFactures();
+    //on vérifie ques les factures sont vident avant de lancer le chargement
+    if((this.factures==null)||((this.factures!=null)&&(this.factures.length==0))){
+      this.onGetFactures();
+    }
   }
 
   async onGetFactures() {
     //on charge les données de factures
     await this.facturesService.getFactures().then(data=>{
       this.factures=data;
+      //on récupère l'arbre du service
+      this.facturesArbre=this.facturesService.facturesArbre;
+      //on récupère l'affichage type et ordre
+      this.typeAffichage=this.facturesService.typeAffichage;
+      this.orderAffichage=this.facturesService.orderAffichage;
     });
-    //on récupère l'arbre du service
-    this.facturesArbre=this.facturesService.facturesArbre;
-    //on récupère l'affichage type et ordre
-    this.typeAffichage=this.facturesService.typeAffichage;
-    this.orderAffichage=this.facturesService.orderAffichage;
   }
 
   onNewFacture() {
@@ -95,6 +95,20 @@ export class FacturesPage implements OnInit {
       event:event,
       translucent: true
     });
+
+    // il faut mettre à jour les facture dans la page pour voir la modification
+    popover.onDidDismiss().then(async (data)=>{
+      //loading.present();
+      this.factures=this.facturesService.factures;
+      // on alimente ou pas la variable arbre
+      if((this.facturesService.typeAffichage=='arbreDateAjout')||(this.facturesService.typeAffichage=='arbreDateFacture')){
+        this.facturesArbre=this.facturesService.facturesArbre;
+      } else {
+        this.facturesArbre=null;
+      }
+      console.log(this.facturesArbre);
+    });
+
     return await popover.present();
 
   }

@@ -49,8 +49,7 @@ export class FacturesService {
     await this.storage.get("billaps:typeAffichage").then(data=>{
       this.typeAffichage=(data!=null?data:'listeDateAjout');
       if(data==null){
-        //TODO : à modifier
-        this.storage.set("billaps:typeAffichage","arbreDateAjout");
+        this.storage.set("billaps:typeAffichage",this.typeAffichage);
       }
     });
 
@@ -69,11 +68,12 @@ export class FacturesService {
       //on construit l'arbre des données si l'affichage est en arbre
       if((this.typeAffichage=='arbreDateAjout')||(this.typeAffichage=='arbreDateFacture')){
         this.facturesArbre = await this.alimenteArbre(this.typeAffichage);
+      } else {
+        this.facturesArbre=null;
       }
 
       //on ordonne les factures
       await this.orderFactures();
-      this.storage.set('test',this.facturesArbre);
 
       //on retourne les factures
       return this.factures.slice();
@@ -211,17 +211,6 @@ export class FacturesService {
     var monthNum:number;
     //on initialise les variables
     const facturesArbre:Array<FacturesArbreYear>=[];
-    const facturesArbreMonth:FacturesArbreMonth=new class implements FacturesArbreMonth {
-      monthNum:number;
-      month:string;
-      listFactures:Array<Facture>=[];
-    };
-    const facturesArbreYear:FacturesArbreYear=new class implements FacturesArbreYear {
-      yearNum:number;
-      liste:Array<FacturesArbreMonth>=[];
-    };
-    facturesArbreYear.liste.push(facturesArbreMonth);
-
 
     //on parcours les factures
     for (var i = 0; i<this.factures.length;i++){
@@ -246,12 +235,7 @@ export class FacturesService {
 
       if(indexAnnee==-1){
         //si elle n'existe pas, on crée l'année
-        var factureYearTemp = facturesArbreYear;
-        factureYearTemp.liste[0].monthNum=monthNum;
-        factureYearTemp.liste[0].month=month;
-        factureYearTemp.liste[0].listFactures.push(item);
-        factureYearTemp.yearNum=year;
-        facturesArbre.push(factureYearTemp);
+        facturesArbre.push({yearNum:year,liste:[{month:month,monthNum:monthNum,listFactures:[item]}]});
       } else {
 
           //l'année existe, on vérifie si le mois existe
@@ -270,6 +254,7 @@ export class FacturesService {
     return facturesArbre;
   }
 
+  // cette méthode permet d'ordoner les factures pour l'affichage de la liste des factures
   private orderFactures() {
     var tri:string;
     var ordre:boolean;
@@ -280,7 +265,7 @@ export class FacturesService {
       tri='dateFacture';
     }
 
-    if (this.orderAffichage == 'desc'){
+    if (this.orderAffichage == 'asc'){
       ordre=false;
     } else {
       ordre=true;
@@ -306,5 +291,21 @@ export class FacturesService {
       this.facturesArbre = this.orderPipe.transform(this.facturesArbre, 'yearNum', ordre);
     }
 
+  }
+
+  async raffraichirAffichage(typeAffichage:string,orderAffichage:string){
+    // on met à jour les variables locales et en localStorage
+    this.typeAffichage=typeAffichage;
+    this.storage.set("billaps:typeAffichage",typeAffichage);
+    this.orderAffichage=orderAffichage;
+    this.storage.set("billaps:orderAffichage",orderAffichage);
+
+    //si on passe dans le cas d'un arbre, il faut alimente l'arbre
+    if ((typeAffichage == 'arbreDateAjout')||(typeAffichage == 'arbreDateFacture')) {
+      this.facturesArbre= await  this.alimenteArbre(typeAffichage);
+    }
+
+    //maintenant que nous avons les données, on ordonne les données :
+    await this.orderFactures();
   }
 }

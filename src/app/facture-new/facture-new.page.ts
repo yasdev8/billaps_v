@@ -318,8 +318,6 @@ export class FactureNewPage implements OnInit {
         this.newFacture.prixTTC = newFacture.prixTTC;
         this.newFacture.dateAjout = new Date();
 
-        console.log("avant create : "+this.newFacture);
-
         // on sauvegarde la facture
         const result = await Promise.all([this.facturesService.createNewFacture(this.newFacture,this.pdf)]);
         //on reset le formulaire
