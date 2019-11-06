@@ -68,11 +68,7 @@ export class FacturesService {
 
       //on construit l'arbre des données si l'affichage est en arbre
       if((this.typeAffichage=='arbreDateAjout')||(this.typeAffichage=='arbreDateFacture')){
-        console.log("111111111111111111111")
-        console.log(this.facturesArbre);
         this.facturesArbre = await this.alimenteArbre(this.typeAffichage);
-        console.log("222222222222222222222")
-        console.log(this.facturesArbre);
       }
 
       //on ordonne les factures
@@ -213,6 +209,7 @@ export class FacturesService {
     var year:number;
     var month:string;
     var monthNum:number;
+    //on initialise les variables
     const facturesArbre:Array<FacturesArbreYear>=[];
     const facturesArbreMonth:FacturesArbreMonth=new class implements FacturesArbreMonth {
       monthNum:number;
@@ -224,28 +221,6 @@ export class FacturesService {
       liste:Array<FacturesArbreMonth>=[];
     };
     facturesArbreYear.liste.push(facturesArbreMonth);
-
-
-    const facturesArbreT:Array<FacturesArbreYear>=[];
-    var facturesArbreMonthT:FacturesArbreMonth=new class implements FacturesArbreMonth {
-      monthNum:number;
-      month:string;
-      listFactures:Array<Facture>=[];
-    };
-    var facturesArbreYearT:FacturesArbreYear=new class implements FacturesArbreYear {
-      yearNum:number;
-      liste:Array<FacturesArbreMonth>=[];
-    };
-    facturesArbreYearT.liste.push(facturesArbreMonthT);
-
-    console.log("*****************************************")
-    console.log(facturesArbre)
-    console.log(facturesArbreYear)
-    console.log(facturesArbreMonth)
-    console.log("//////////////////////////////////////////")
-    console.log(facturesArbreT)
-    console.log(facturesArbreYearT)
-    console.log(facturesArbreMonthT)
 
 
     //on parcours les factures
@@ -267,13 +242,7 @@ export class FacturesService {
               (monthNum==9?'Septembre':(monthNum==10?'Octobre':(monthNum==11?'Novembre':'Décembre')))))))))));
 
       // on regarde si l'année existe
-      //var indexAnnee = facturesArbre.findIndex(i=>i.yearNum===year);
-      var indexAnnee =-1;
-      for (var p=0;p<facturesArbre.length;p++){
-        if(facturesArbre[p].yearNum==year){
-          indexAnnee=p
-        }
-      }
+      var indexAnnee = facturesArbre.findIndex(i=>i.yearNum===year);
 
       if(indexAnnee==-1){
         //si elle n'existe pas, on crée l'année
@@ -284,27 +253,17 @@ export class FacturesService {
         factureYearTemp.yearNum=year;
         facturesArbre.push(factureYearTemp);
       } else {
-        //l'année existe, on vérifie si le mois existe
-        //var indexMois = facturesArbre[indexAnnee].liste.findIndex(i=>i.monthNum===monthNum);
-        var indexMois =-1;
-        for (var p=0;p<facturesArbre[indexAnnee].liste.length;p++){
-          if(facturesArbre[indexAnnee].liste[p].monthNum==monthNum){
-            indexMois=p
+
+          //l'année existe, on vérifie si le mois existe
+          var indexMois = facturesArbre[indexAnnee].liste.findIndex(i=>i.monthNum===monthNum);
+
+          if(indexMois==-1){
+            // le mois n'existe pas
+            facturesArbre[indexAnnee].liste.push({month:month,monthNum:monthNum,listFactures:[item]});
+          } else {
+            //le mois existe
+            facturesArbre[indexAnnee].liste[indexMois].listFactures.push(item);
           }
-        }
-
-        if(indexMois==-1){
-          // le mois n'existe pas
-          var factureMonthTemp = facturesArbreMonth;
-          factureMonthTemp.monthNum=monthNum;
-          factureMonthTemp.month=month;
-          factureMonthTemp.listFactures.push(item);
-
-          facturesArbre[indexAnnee].liste.push(factureMonthTemp);
-        } else {
-          //le mois existe
-          facturesArbre[indexAnnee].liste[indexMois].listFactures.push(item);
-        }
       }
     }
 
