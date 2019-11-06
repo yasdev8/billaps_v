@@ -9,6 +9,7 @@ import {AngularFireStorage} from "@angular/fire/storage";
 import {Router} from '@angular/router';
 import {forEach} from '@angular-devkit/schematics';
 import {OrderPipe} from 'ngx-order-pipe';
+import {test} from '@angular-devkit/core/src/virtual-fs/host';
 
 @Injectable({
   providedIn: 'root'
@@ -46,18 +47,18 @@ export class FacturesService {
   async getFactures(){
     //on récupère le type d'affichage
     await this.storage.get("billaps:typeAffichage").then(data=>{
-      this.typeAffichage=(data!=null?data:'liste');
+      this.typeAffichage=(data!=null?data:'listeDateAjout');
       if(data==null){
         //TODO : à modifier
-        this.storage.set("billaps:typeAffichage","dateAjout");
+        this.storage.set("billaps:typeAffichage","arbreDateAjout");
       }
     });
 
     //on récupère l'ordre d'affichage
     await this.storage.get("billaps:orderAffichage").then(data=>{
-      this.orderAffichage=(data!=null?data:'dateAjoutDesc');
+      this.orderAffichage=(data!=null?data:'desc');
       if(data==null){
-        this.storage.set("billaps:orderAffichage","dateAjoutDesc");
+        this.storage.set("billaps:orderAffichage",this.orderAffichage);
       }
     });
 
@@ -66,15 +67,17 @@ export class FacturesService {
       this.factures=(data!=null?data:[]);
 
       //on construit l'arbre des données si l'affichage est en arbre
-      if(this.typeAffichage!='liste'){
-         await this.alimenteArbre(this.typeAffichage).then(data=>{
-           // on affecte le tableau a la variable globale
-           this.facturesArbre=data;
-         });
+      if((this.typeAffichage=='arbreDateAjout')||(this.typeAffichage=='arbreDateFacture')){
+        console.log("111111111111111111111")
+        console.log(this.facturesArbre);
+        this.facturesArbre = await this.alimenteArbre(this.typeAffichage);
+        console.log("222222222222222222222")
+        console.log(this.facturesArbre);
       }
 
       //on ordonne les factures
       await this.orderFactures();
+      this.storage.set('test',this.facturesArbre);
 
       //on retourne les factures
       return this.factures.slice();
@@ -206,83 +209,142 @@ export class FacturesService {
   /*
   Le but de cette fonction est d'alimenter les données de factures dans l'arbre
    */
-  async alimenteArbre(typeAffichage:string){
+  alimenteArbre(typeAffichage:string){
     var year:number;
     var month:string;
     var monthNum:number;
-    var facturesArbre:Array<FacturesArbreYear>=[];
-    var facturesArbreMonth:FacturesArbreMonth=new class implements FacturesArbreMonth {
+    const facturesArbre:Array<FacturesArbreYear>=[];
+    const facturesArbreMonth:FacturesArbreMonth=new class implements FacturesArbreMonth {
       monthNum:number;
       month:string;
       listFactures:Array<Facture>=[];
     };
-    var facturesArbreYear:FacturesArbreYear=new class implements FacturesArbreYear {
+    const facturesArbreYear:FacturesArbreYear=new class implements FacturesArbreYear {
       yearNum:number;
       liste:Array<FacturesArbreMonth>=[];
     };
+    facturesArbreYear.liste.push(facturesArbreMonth);
+
+
+    const facturesArbreT:Array<FacturesArbreYear>=[];
+    var facturesArbreMonthT:FacturesArbreMonth=new class implements FacturesArbreMonth {
+      monthNum:number;
+      month:string;
+      listFactures:Array<Facture>=[];
+    };
+    var facturesArbreYearT:FacturesArbreYear=new class implements FacturesArbreYear {
+      yearNum:number;
+      liste:Array<FacturesArbreMonth>=[];
+    };
+    facturesArbreYearT.liste.push(facturesArbreMonthT);
+
+    console.log("*****************************************")
+    console.log(facturesArbre)
+    console.log(facturesArbreYear)
+    console.log(facturesArbreMonth)
+    console.log("//////////////////////////////////////////")
+    console.log(facturesArbreT)
+    console.log(facturesArbreYearT)
+    console.log(facturesArbreMonthT)
+
 
     //on parcours les factures
-      this.factures.forEach(function(item){
+    for (var i = 0; i<this.factures.length;i++){
+      var item = this.factures[i];
 
-        // on classe en fonction du type d'affichage
-        if(typeAffichage=='dateAjout'){
-          year=item.dateAjout.getFullYear();
-          monthNum=item.dateAjout.getMonth();
-        } else if(typeAffichage=='dateFacture'){
-          year=item.dateFacture.getFullYear();
-          monthNum=item.dateFacture.getMonth();
+      // on classe en fonction du type d'affichage
+      if(typeAffichage=='arbreDateAjout'){
+        year=item.dateAjout.getFullYear();
+        monthNum=item.dateAjout.getMonth()+1;
+      } else if(typeAffichage=='arbreDateFacture'){
+        year=item.dateFacture.getFullYear();
+        monthNum=item.dateFacture.getMonth()+1;
+      }
+
+      //on récupère le mois en string
+      month=(monthNum==1?'Janvier':(monthNum==2?'Février':(monthNum==3?'Mars':(monthNum==4?'Avril':
+          (monthNum==5?'Mai':(monthNum==6?'Juin':(monthNum==7?'Juillet':(monthNum==8?'Août':
+              (monthNum==9?'Septembre':(monthNum==10?'Octobre':(monthNum==11?'Novembre':'Décembre')))))))))));
+
+      // on regarde si l'année existe
+      //var indexAnnee = facturesArbre.findIndex(i=>i.yearNum===year);
+      var indexAnnee =-1;
+      for (var p=0;p<facturesArbre.length;p++){
+        if(facturesArbre[p].yearNum==year){
+          indexAnnee=p
         }
+      }
 
-        //on récupère le mois en string
-        month=(monthNum==1?'Janvier':(monthNum==2?'Février':(monthNum==3?'Mars':(monthNum==4?'Avril':
-            (monthNum==5?'Mai':(monthNum==6?'Juin':(monthNum==7?'Juillet':(monthNum==8?'Août':
-                (monthNum==9?'Septembre':(monthNum==10?'Octobre':(monthNum==11?'Novembre':'Décembre')))))))))));
-
-        // on regarde si l'année existe
-        var indexAnnee = facturesArbre.findIndex(i=>i.yearNum===year);
-        if(indexAnnee==-1){
-          //si elle n'existe pas, on crée l'année
-          facturesArbreMonth.monthNum=monthNum;
-          facturesArbreMonth.month=month;
-          facturesArbreMonth.listFactures.push(item);
-          facturesArbreYear.yearNum=year;
-          facturesArbreYear.liste.push(facturesArbreMonth);
-          facturesArbre.push(facturesArbreYear);
-        } else {
-          //l'année existe, on vérifie si le mois existe
-          var indexMois = facturesArbre[indexAnnee].liste.findIndex(i=>i.monthNum===monthNum);
-          if(indexMois==-1){
-            // le mois n'existe pas
-            facturesArbreMonth.monthNum=monthNum;
-            facturesArbreMonth.month=month;
-            facturesArbreMonth.listFactures.push(item);
-            facturesArbre[indexAnnee].liste.push(facturesArbreMonth);
-          } else {
-            //le mois existe
-            facturesArbre[indexAnnee].liste[indexMois].listFactures.push(item);
+      if(indexAnnee==-1){
+        //si elle n'existe pas, on crée l'année
+        var factureYearTemp = facturesArbreYear;
+        factureYearTemp.liste[0].monthNum=monthNum;
+        factureYearTemp.liste[0].month=month;
+        factureYearTemp.liste[0].listFactures.push(item);
+        factureYearTemp.yearNum=year;
+        facturesArbre.push(factureYearTemp);
+      } else {
+        //l'année existe, on vérifie si le mois existe
+        //var indexMois = facturesArbre[indexAnnee].liste.findIndex(i=>i.monthNum===monthNum);
+        var indexMois =-1;
+        for (var p=0;p<facturesArbre[indexAnnee].liste.length;p++){
+          if(facturesArbre[indexAnnee].liste[p].monthNum==monthNum){
+            indexMois=p
           }
         }
 
-      });
+        if(indexMois==-1){
+          // le mois n'existe pas
+          var factureMonthTemp = facturesArbreMonth;
+          factureMonthTemp.monthNum=monthNum;
+          factureMonthTemp.month=month;
+          factureMonthTemp.listFactures.push(item);
 
-      return facturesArbre;
+          facturesArbre[indexAnnee].liste.push(factureMonthTemp);
+        } else {
+          //le mois existe
+          facturesArbre[indexAnnee].liste[indexMois].listFactures.push(item);
+        }
+      }
+    }
+
+    return facturesArbre;
   }
 
   private orderFactures() {
-    //on ordonne les factures affichées
-    if (this.typeAffichage = 'liste') {
-      if (this.orderAffichage = 'dateAjoutDesc') {
-        this.factures = this.orderPipe.transform(this.factures, 'dateAjout', false);
-      } else if (this.orderAffichage = 'dateAjoutAsc') {
-        this.factures = this.orderPipe.transform(this.factures, 'dateAjout', true);
-      } else if (this.orderAffichage = 'dateFactureDesc') {
-        this.factures = this.orderPipe.transform(this.factures, 'dateFacture', false);
-      } else if (this.orderAffichage = 'dateFactureAsc') {
-        this.factures = this.orderPipe.transform(this.factures, 'dateFacture', true);
-      }
+    var tri:string;
+    var ordre:boolean;
+
+    if ((this.typeAffichage == 'listeDateAjout')||(this.typeAffichage == 'arbreDateAjout')) {
+      tri='dateAjout';
+    } else if ((this.typeAffichage == 'listeDateFacture')||(this.typeAffichage == 'arbreDateFacture')) {
+      tri='dateFacture';
+    }
+
+    if (this.orderAffichage == 'desc'){
+      ordre=false;
     } else {
+      ordre=true;
+    }
+
+
+    //on ordonne les factures affichées
+    if ((this.typeAffichage == 'listeDateAjout')||(this.typeAffichage == 'listeDateFacture')) {
+      this.factures = this.orderPipe.transform(this.factures, tri, ordre);
+    } else if ((this.typeAffichage == 'arbreDateAjout')||(this.typeAffichage == 'arbreDateFacture')) {
+
       //on ordonne les factures en arbres
-      //TODO ordonner les factures
+      for(var y;y<this.facturesArbre.length;y++){
+        //pour chaque mois
+        for(var m;m<this.facturesArbre[y].liste.length;m++){
+          //facture
+          this.facturesArbre[y].liste[m].listFactures=this.orderPipe.transform(this.facturesArbre[y].liste[m].listFactures, tri, ordre);
+        }
+
+        this.facturesArbre[y].liste = this.orderPipe.transform(this.facturesArbre[y].liste, 'monthNum', ordre);
+      }
+
+      this.facturesArbre = this.orderPipe.transform(this.facturesArbre, 'yearNum', ordre);
     }
 
   }

@@ -158,20 +158,9 @@ export class FactureNewPage implements OnInit {
         // on traite que les photos, les pdf sont déjà enregistré
         if(this.newFacture.photoType!='pdf'){
             //on récupère la taille
-            console.log(" imgWidth : "+this.img.width);
-            console.log(" imgHeigth : "+this.img.height);
-            console.log(" imgWidthNatural : "+this.img.naturalWidth);
-            console.log(" imgHeigthNatural : "+this.img.naturalHeight);
-            console.log(" imgWidthClient : "+this.img.clientWidth);
-            console.log(" imgHeigthClient : "+this.img.clientHeight);
-            console.log(" imgWidthOffset : "+this.img.offsetWidth);
-            console.log(" imgHeigthOfsset : "+this.img.offsetHeight);
             this.width=this.img.width;
             this.height=this.img.height;
 
-
-            console.log("avant modif, width : "+this.width);
-            console.log("avant modif, height : "+this.height);
             //on regarde si la photo est plus grande qu'une feuille A4 et on resize
             var pageOrient;
             if (this.width>this.height){
@@ -221,11 +210,6 @@ export class FactureNewPage implements OnInit {
                     topBotMargin=(595.28-this.height)/2;
                 }
             }
-
-            console.log("width : "+this.width);
-            console.log("height : "+this.height);
-            console.log("lefRigMargin : "+lefRigMargin);
-            console.log("topBotMargin : "+topBotMargin);
 
             //on crée la définition du document
             let docDefinition = {
@@ -411,11 +395,9 @@ export class FactureNewPage implements OnInit {
 
     async openPicDriss(source:string){
         if (source === 'camera') {
-            console.log('camera');
             const cameraPhoto = await this.openCamera();
             this.newFacture.photos = 'data:image/jpg;base64,' + cameraPhoto;
         } else {
-            console.log('library');
             const libraryImage = await this.openLibrary();
             this.newFacture.photos = 'data:image/jpg;base64,' + libraryImage;
         }
@@ -456,7 +438,7 @@ export class FactureNewPage implements OnInit {
 
         await loading.present();
         this.upload = this.afSG.ref(this.imagePath).putString(this.dataURL, 'data_url');
-        console.log(this.upload);
+
         this.upload.then(async () => {
             await loading.onDidDismiss();
             //this.newFacture.photos = 'https://www.kasterencultuur.nl/editor/placeholder.jpg';
