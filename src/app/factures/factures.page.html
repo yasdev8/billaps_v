@@ -19,7 +19,7 @@
 
 <ion-content>
   <!--visuel liste-->
-  <ion-list *ngIf="facturesService.typeAffichage==='liste'">
+  <ion-list *ngIf="facturesService.typeAffichage=='liste'">
     <ion-item-sliding *ngFor="let f of factures" (ionSwipe)="delete(f)">
       <ion-item (click)="onDetailFacture(f)" >
         <div class="titleSection ion-padding ion-padding-start">
@@ -29,8 +29,10 @@
           <p class="descText ion-no-margin ion-no-padding">{{f.photoTitle}}</p>
         </div>
         <div slot="end" class="lastSection">
-          <ion-note>{{f.dateAjout.getDate()+'/'+(f.dateAjout.getMonth()+1)+'/'+
-          f.dateAjout.getFullYear()}}</ion-note>
+          <ion-note *ngIf="facturesService.filterAffichage=='dateAjout'">{{f.dateAjout.getDate()+'/'
+          +(f.dateAjout.getMonth()+1)+'/'+f.dateAjout.getFullYear()}}</ion-note>
+          <ion-note *ngIf="facturesService.filterAffichage=='dateFacture'">{{f.dateFacture.getDate()+'/'
+          +(f.dateFacture.getMonth()+1)+'/'+f.dateFacture.getFullYear()}}</ion-note>
         </div>
       </ion-item>
       <ion-item-options side="end">
@@ -43,7 +45,7 @@
 
 
   <!--visuel accordeon-->
-  <div *ngIf="facturesService.typeAffichage==='arbre'">
+  <div *ngIf="facturesService.typeAffichage=='arbre'">
     <ion-list *ngFor="let factYear of facturesArbre; let i = index;" class="accordeon-list" lines="none"
               detail="false" class="ion-no-padding">
       <ion-item tappable (click)="toggleSection(i)" [ngClass]="{'section-active': factYear.open, 'section': !factYear.open}">
@@ -77,8 +79,10 @@
                   <p class="descText ion-no-margin ion-no-padding">{{f.photoTitle}}</p>
                 </div>
                 <div slot="end" class="lastSection">
-                  <ion-note>{{f.dateAjout.getDate()+'/'+(f.dateAjout.getMonth()+1)+'/'+
-                  f.dateAjout.getFullYear()}}</ion-note>
+                  <ion-note *ngIf="facturesService.filterAffichage=='dateAjout'">{{f.dateAjout.getDate()+'/'
+                  +(f.dateAjout.getMonth()+1)+'/'+f.dateAjout.getFullYear()}}</ion-note>
+                  <ion-note *ngIf="facturesService.filterAffichage=='dateFacture'">{{f.dateFacture.getDate()+'/'
+                  +(f.dateFacture.getMonth()+1)+'/'+f.dateFacture.getFullYear()}}</ion-note>
                 </div>
               </ion-item>
               <ion-item-options side="end">

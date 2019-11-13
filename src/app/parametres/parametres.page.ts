@@ -17,7 +17,13 @@ export class ParametresPage implements OnInit {
   ngOnInit() {
   }
 
+  //déconnexion
   logout() {
     this.authService.logout();
+  }
+
+  //naviguer vers
+  private goTo(destination:string){
+    this.router.navigateByUrl(destination);
   }
 }

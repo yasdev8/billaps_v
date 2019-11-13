@@ -14,6 +14,7 @@ const routes: Routes = [
   { path: 'contacts', loadChildren: './contacts/contacts.module#ContactsPageModule' },
   { path: 'test-chat', loadChildren: './test-chat/test-chat.module#TestChatPageModule' },
   { path: 'fcm', loadChildren: './fcm/fcm.module#FcmPageModule' },
+  { path: 'profile', loadChildren: './profile/profile.module#ProfilePageModule' },
 ];
 
 @NgModule({
