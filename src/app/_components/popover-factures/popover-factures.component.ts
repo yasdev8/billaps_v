@@ -12,6 +12,8 @@ export class PopoverFacturesComponent implements OnInit {
 
   //type d'affichage des factures
   public typeAffichage:string;
+  //filtre d'affichage des factures
+  public filterAffichage:string;
   //ordre de l'affichage
   public orderAffichage:string;
 
@@ -23,18 +25,19 @@ export class PopoverFacturesComponent implements OnInit {
 
   ngOnInit() {
     this.typeAffichage=this.facturesService.typeAffichage;
+    this.filterAffichage=this.facturesService.filterAffichage;
     this.orderAffichage=this.facturesService.orderAffichage;
   }
 
   private updateAffichage1(param:string){
     //on remplace le choix de l'arbre ou de la liste
-    this.typeAffichage=param+this.typeAffichage.substring(5,this.typeAffichage.length);
+    this.typeAffichage=param;
   }
 
-  private updateAffichage2(param1:string,param2:string){
+  private updateAffichage2(filter:string,order:string){
     //on modifie pour le tri
-    this.typeAffichage=this.typeAffichage.substring(0,9)+param1;
-    this.orderAffichage=param2;
+    this.filterAffichage=filter;
+    this.orderAffichage=order;
   }
 
   //on valide la modification d'affichage
@@ -46,7 +49,7 @@ export class PopoverFacturesComponent implements OnInit {
     });
     loading.present();
     //on met ajour l'affichage des facture
-    await this.facturesService.raffraichirAffichage(this.typeAffichage,this.orderAffichage);
+    await this.facturesService.raffraichirAffichage(this.typeAffichage,this.filterAffichage,this.orderAffichage);
 
     //on ferme la pop-up
     await this.popoverController.dismiss(true);

@@ -59,7 +59,6 @@
                 [disabled]="(!new_item_form.valid)||(newFacture.photoTitle==null)">Ajouter</ion-button>
     <ion-button *ngIf="newFacture.idApp!=null" class="submit-btn" expand="block" type="submit">Update</ion-button>
   </form>
-  <ion-button ion-button full (click)="generatePdf()" >generate pdf</ion-button>
 </ion-content>
 
 <ion-footer>

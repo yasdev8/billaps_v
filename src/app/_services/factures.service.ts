@@ -27,6 +27,8 @@ export class FacturesService {
   dataURL:any;
   //type d'affichage des factures
   public typeAffichage:string;
+  //Filtre d'affichage des factures
+  public filterAffichage:string;
   //ordre de l'affichage
   public orderAffichage:string;
 
@@ -47,9 +49,17 @@ export class FacturesService {
   async getFactures(){
     //on récupère le type d'affichage
     await this.storage.get("billaps:typeAffichage").then(data=>{
-      this.typeAffichage=(data!=null?data:'listeDateAjout');
+      this.typeAffichage=(data!=null?data:'liste');
       if(data==null){
         this.storage.set("billaps:typeAffichage",this.typeAffichage);
+      }
+    });
+
+    //on récupère le filtre d'affichage
+    await this.storage.get("billaps:filterAffichage").then(data=>{
+      this.filterAffichage=(data!=null?data:'dateAjout');
+      if(data==null){
+        this.storage.set("billaps:filterAffichage",this.filterAffichage);
       }
     });
 
@@ -66,8 +76,8 @@ export class FacturesService {
       this.factures=(data!=null?data:[]);
 
       //on construit l'arbre des données si l'affichage est en arbre
-      if((this.typeAffichage=='arbreDateAjout')||(this.typeAffichage=='arbreDateFacture')){
-        this.facturesArbre = await this.alimenteArbre(this.typeAffichage);
+      if(this.typeAffichage=='arbre'){
+        this.facturesArbre = await this.alimenteArbre(this.typeAffichage, this.filterAffichage);
       } else {
         this.facturesArbre=null;
       }
@@ -111,7 +121,7 @@ export class FacturesService {
     }
 
     //on crée l'id de la facture
-    await Promise.all([this.storage.get("billaps:maxIdFacture").then(data=>{
+    await Promise.all([this.storage.get("billaps:maxIdFacture").then(async data=>{
       //cas ou pas de maxId donc pas de facture
       if(data==null){
         newFacture.idApp=1;
@@ -123,6 +133,16 @@ export class FacturesService {
 
       //permet d'ajouter la facture au début de la liste des factures
       this.factures.unshift(newFacture);
+      //on doit ré-arranger les factures pour l'affichage
+      //on construit l'arbre des données si l'affichage est en arbre
+      if(this.typeAffichage=='arbre'){
+        this.facturesArbre = await this.alimenteArbre(this.typeAffichage, this.filterAffichage);
+      } else {
+        this.facturesArbre=null;
+      }
+      //on ordonne les factures
+      await this.orderFactures();
+
       this.storage.set("billaps:factures",this.factures);
     })]);
 
@@ -181,9 +201,30 @@ export class FacturesService {
 
   //permet de mettre à jour une facture en base
   async updateOneFacture(facture: Facture) {
+    //si la date de la facture a été modifiée
+    var modifDateFacture:boolean;
+    modifDateFacture=false;
+
     // on récupère la position de la facture et on la met à jour dans la liste
     let index=this.factures.indexOf(facture);
+
+    //on vérifie si la date de facture a été modifiée
+    if(this.factures[index].dateFacture!=facture.dateFacture){
+      modifDateFacture=true;
+    }
+
     this.factures[index]=facture;
+
+    //on ré-arrange les données
+    //on construit l'arbre des données si l'affichage est en arbre
+    if(this.typeAffichage=='arbre'){
+      this.facturesArbre = await this.alimenteArbre(this.typeAffichage, this.filterAffichage);
+    } else {
+      this.facturesArbre=null;
+    }
+    //on ordonne les factures
+    await this.orderFactures();
+
     // on sauvegarde en base la liste des factures
     try {
       const test = await Promise.all([this.storage.set("billaps:factures", this.factures).then(data=>{
@@ -205,7 +246,7 @@ export class FacturesService {
   /*
   Le but de cette fonction est d'alimenter les données de factures dans l'arbre
    */
-  alimenteArbre(typeAffichage:string){
+  alimenteArbre(typeAffichage:string,filterAffichage:string){
     var year:number;
     var month:string;
     var monthNum:number;
@@ -217,10 +258,10 @@ export class FacturesService {
       var item = this.factures[i];
 
       // on classe en fonction du type d'affichage
-      if(typeAffichage=='arbreDateAjout'){
+      if(filterAffichage=='dateAjout'){
         year=item.dateAjout.getFullYear();
         monthNum=item.dateAjout.getMonth()+1;
-      } else if(typeAffichage=='arbreDateFacture'){
+      } else if(filterAffichage=='dateFacture'){
         year=item.dateFacture.getFullYear();
         monthNum=item.dateFacture.getMonth()+1;
       }
@@ -235,7 +276,7 @@ export class FacturesService {
 
       if(indexAnnee==-1){
         //si elle n'existe pas, on crée l'année
-        facturesArbre.push({yearNum:year,liste:[{month:month,monthNum:monthNum,listFactures:[item]}]});
+        facturesArbre.push({open:false,yearNum:year,numberFact:1,liste:[{month:month,monthNum:monthNum,listFactures:[item],open:false}]});
       } else {
 
           //l'année existe, on vérifie si le mois existe
@@ -243,10 +284,14 @@ export class FacturesService {
 
           if(indexMois==-1){
             // le mois n'existe pas
-            facturesArbre[indexAnnee].liste.push({month:month,monthNum:monthNum,listFactures:[item]});
+            facturesArbre[indexAnnee].liste.push({month:month,monthNum:monthNum,listFactures:[item],open:false});
+            //on augmente le nombre de facture présent dans l'année
+            facturesArbre[indexAnnee].numberFact=facturesArbre[indexAnnee].numberFact+1;
           } else {
             //le mois existe
             facturesArbre[indexAnnee].liste[indexMois].listFactures.push(item);
+            //on augmente le nombre de facture présent dans l'année
+            facturesArbre[indexAnnee].numberFact=facturesArbre[indexAnnee].numberFact+1;
           }
       }
     }
@@ -256,14 +301,7 @@ export class FacturesService {
 
   // cette méthode permet d'ordoner les factures pour l'affichage de la liste des factures
   private orderFactures() {
-    var tri:string;
     var ordre:boolean;
-
-    if ((this.typeAffichage == 'listeDateAjout')||(this.typeAffichage == 'arbreDateAjout')) {
-      tri='dateAjout';
-    } else if ((this.typeAffichage == 'listeDateFacture')||(this.typeAffichage == 'arbreDateFacture')) {
-      tri='dateFacture';
-    }
 
     if (this.orderAffichage == 'asc'){
       ordre=false;
@@ -273,16 +311,16 @@ export class FacturesService {
 
 
     //on ordonne les factures affichées
-    if ((this.typeAffichage == 'listeDateAjout')||(this.typeAffichage == 'listeDateFacture')) {
-      this.factures = this.orderPipe.transform(this.factures, tri, ordre);
-    } else if ((this.typeAffichage == 'arbreDateAjout')||(this.typeAffichage == 'arbreDateFacture')) {
+    if (this.typeAffichage == 'liste') {
+      this.factures = this.orderPipe.transform(this.factures, this.filterAffichage, ordre);
+    } else if (this.typeAffichage == 'arbre'){
 
       //on ordonne les factures en arbres
       for(var y;y<this.facturesArbre.length;y++){
         //pour chaque mois
         for(var m;m<this.facturesArbre[y].liste.length;m++){
           //facture
-          this.facturesArbre[y].liste[m].listFactures=this.orderPipe.transform(this.facturesArbre[y].liste[m].listFactures, tri, ordre);
+          this.facturesArbre[y].liste[m].listFactures=this.orderPipe.transform(this.facturesArbre[y].liste[m].listFactures, this.filterAffichage, ordre);
         }
 
         this.facturesArbre[y].liste = this.orderPipe.transform(this.facturesArbre[y].liste, 'monthNum', ordre);
@@ -291,18 +329,22 @@ export class FacturesService {
       this.facturesArbre = this.orderPipe.transform(this.facturesArbre, 'yearNum', ordre);
     }
 
+    console.log(this.facturesArbre);
+
   }
 
-  async raffraichirAffichage(typeAffichage:string,orderAffichage:string){
+  async raffraichirAffichage(typeAffichage:string,filterAffichage:string,orderAffichage:string){
     // on met à jour les variables locales et en localStorage
     this.typeAffichage=typeAffichage;
     this.storage.set("billaps:typeAffichage",typeAffichage);
+    this.filterAffichage=filterAffichage;
+    this.storage.set("billaps:filterAffichage",filterAffichage);
     this.orderAffichage=orderAffichage;
     this.storage.set("billaps:orderAffichage",orderAffichage);
 
     //si on passe dans le cas d'un arbre, il faut alimente l'arbre
-    if ((typeAffichage == 'arbreDateAjout')||(typeAffichage == 'arbreDateFacture')) {
-      this.facturesArbre= await  this.alimenteArbre(typeAffichage);
+    if (typeAffichage == 'arbre'){
+      this.facturesArbre= await  this.alimenteArbre(typeAffichage,filterAffichage);
     }
 
     //maintenant que nous avons les données, on ordonne les données :

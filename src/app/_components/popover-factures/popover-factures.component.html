@@ -10,26 +10,26 @@
   <ion-list>
     <!--afficher toutes les factures-->
     <ion-item (click)="updateAffichage1('liste')"
-              *ngIf="(typeAffichage=='listeDateAjout')||(typeAffichage=='listeDateFacture')" color="primary">
+              *ngIf="typeAffichage=='liste'" color="primary">
       <ion-label>
         Afficher toutes les factures
       </ion-label>
     </ion-item>
     <ion-item (click)="updateAffichage1('liste')"
-              *ngIf="(typeAffichage=='arbreDateAjout')||(typeAffichage=='arbreDateFacture')">
+              *ngIf="typeAffichage=='arbre'">
       <ion-label>
         Afficher toutes les factures
       </ion-label>
     </ion-item>
     <!--afficher par année/mois-->
     <ion-item (click)="updateAffichage1('arbre')"
-              *ngIf="(typeAffichage=='arbreDateAjout')||(typeAffichage=='arbreDateFacture')" color="primary">
+              *ngIf="typeAffichage=='arbre'" color="primary">
       <ion-label>
         Afficher par année/mois
       </ion-label>
     </ion-item>
     <ion-item (click)="updateAffichage1('arbre')"
-              *ngIf="(typeAffichage=='listeDateAjout')||(typeAffichage=='listeDateFacture')">
+              *ngIf="typeAffichage=='liste'">
       <ion-label>
         Afficher par année/mois
       </ion-label>
@@ -39,53 +39,53 @@
   <h2 class="ion-padding">Tri</h2>
   <ion-list>
     <!-- date ajout desc -->
-    <ion-item (click)="updateAffichage2('Ajout','desc')" color="primary"
-              *ngIf="((typeAffichage=='listeDateAjout')||(typeAffichage=='arbreDateAjout'))&&(orderAffichage=='desc')">
+    <ion-item (click)="updateAffichage2('dateAjout','desc')" color="primary"
+              *ngIf="(filterAffichage=='dateAjout')&&(orderAffichage=='desc')">
       <ion-label>
         Par date d'ajout la plus récente
       </ion-label>
     </ion-item>
-    <ion-item (click)="updateAffichage2('Ajout','desc')"
-              *ngIf="((typeAffichage=='listeDateFacture')||(typeAffichage=='arbreDateFacture'))||(orderAffichage=='asc')">
+    <ion-item (click)="updateAffichage2('dateAjout','desc')"
+              *ngIf="(filterAffichage=='dateFacture')||(orderAffichage=='asc')">
       <ion-label>
         Par date d'ajout la plus récente
       </ion-label>
     </ion-item>
     <!-- date ajout asc -->
-    <ion-item color="primary" (click)="updateAffichage2('Ajout','asc')"
-              *ngIf="((typeAffichage=='listeDateAjout')||(typeAffichage=='arbreDateAjout'))&&(orderAffichage=='asc')">
+    <ion-item color="primary" (click)="updateAffichage2('dateAjout','asc')"
+              *ngIf="(filterAffichage=='dateAjout')&&(orderAffichage=='asc')">
       <ion-label>
         Par date d'ajout la plus ancienne
       </ion-label>
     </ion-item>
-    <ion-item (click)="updateAffichage2('Ajout','asc')"
-              *ngIf="((typeAffichage=='listeDateFacture')||(typeAffichage=='arbreDateFacture'))||(orderAffichage=='desc')">
+    <ion-item (click)="updateAffichage2('dateAjout','asc')"
+              *ngIf="(filterAffichage=='dateFacture')||(orderAffichage=='desc')">
       <ion-label>
         Par date d'ajout la plus ancienne
       </ion-label>
     </ion-item>
     <!-- date facture desc -->
-    <ion-item color="primary" (click)="updateAffichage2('Facture','desc')"
-              *ngIf="((typeAffichage=='listeDateFacture')||(typeAffichage=='arbreDateFacture'))&&(orderAffichage=='desc')">
+    <ion-item color="primary" (click)="updateAffichage2('dateFacture','desc')"
+              *ngIf="(filterAffichage=='dateFacture')&&(orderAffichage=='desc')">
       <ion-label>
         Par date de facture la plus récente
       </ion-label>
     </ion-item>
-    <ion-item (click)="updateAffichage2('Facture','desc')"
-              *ngIf="((typeAffichage=='listeDateAjout')||(typeAffichage=='arbreDateAjout'))||(orderAffichage=='asc')">
+    <ion-item (click)="updateAffichage2('dateFacture','desc')"
+              *ngIf="(filterAffichage=='dateAjout')||(orderAffichage=='asc')">
       <ion-label>
         Par date de facture la plus récente
       </ion-label>
     </ion-item>
     <!-- date facture asc -->
-    <ion-item color="primary" (click)="updateAffichage2('Facture','asc')"
-              *ngIf="((typeAffichage=='listeDateFacture')||(typeAffichage=='arbreDateFacture'))&&(orderAffichage=='asc')">
+    <ion-item color="primary" (click)="updateAffichage2('dateFacture','asc')"
+              *ngIf="(filterAffichage=='dateFacture')&&(orderAffichage=='asc')">
       <ion-label>
         Par date de facture la plus ancienne
       </ion-label>
     </ion-item>
-    <ion-item (click)="updateAffichage2('Facture','asc')"
-              *ngIf="((typeAffichage=='listeDateAjout')||(typeAffichage=='arbreDateAjout'))||(orderAffichage=='desc')">
+    <ion-item (click)="updateAffichage2('dateFacture','asc')"
+              *ngIf="(filterAffichage=='dateAjout')||(orderAffichage=='desc')">
       <ion-label>
         Par date de facture la plus ancienne
       </ion-label>
