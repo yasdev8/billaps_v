@@ -314,22 +314,21 @@ export class FacturesService {
     if (this.typeAffichage == 'liste') {
       this.factures = this.orderPipe.transform(this.factures, this.filterAffichage, ordre);
     } else if (this.typeAffichage == 'arbre'){
+      //onordonne les années
+      this.facturesArbre = this.orderPipe.transform(this.facturesArbre, 'yearNum', ordre);
 
       //on ordonne les factures en arbres
-      for(var y;y<this.facturesArbre.length;y++){
+      for(var y=0;y<this.facturesArbre.length;y++){
+        //on ordonne les mois
+        this.facturesArbre[y].liste = this.orderPipe.transform(this.facturesArbre[y].liste, 'monthNum', ordre);
+
         //pour chaque mois
-        for(var m;m<this.facturesArbre[y].liste.length;m++){
-          //facture
+        for(var m=0;m<this.facturesArbre[y].liste.length;m++){
+          //on ordonne les facture
           this.facturesArbre[y].liste[m].listFactures=this.orderPipe.transform(this.facturesArbre[y].liste[m].listFactures, this.filterAffichage, ordre);
         }
-
-        this.facturesArbre[y].liste = this.orderPipe.transform(this.facturesArbre[y].liste, 'monthNum', ordre);
       }
-
-      this.facturesArbre = this.orderPipe.transform(this.facturesArbre, 'yearNum', ordre);
     }
-
-    console.log(this.facturesArbre);
 
   }
 
