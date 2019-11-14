@@ -24,4 +24,6 @@ export class ProfilePage implements OnInit {
     this.navCtrl.back();
   }
 
+  //TODO finir la page de profil
+
 }

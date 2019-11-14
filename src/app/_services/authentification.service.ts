@@ -8,6 +8,8 @@ import {Platform} from "@ionic/angular";
 import {AngularFireDatabase} from "@angular/fire/database";
 import UserCredential = firebase.auth.UserCredential;
 import {Storage} from "@ionic/storage";
+import {AngularFirestore} from '@angular/fire/firestore';
+import {ignore} from 'selenium-webdriver/testing';
 
 @Injectable({
   providedIn: 'root'
@@ -22,18 +24,21 @@ export class AuthentificationService {
 
   //variable de l'utilisateur en localStorage
   public localUser={
-    idBackEnd:'',
-    idFirebase:'',
-    displayName:'',
+    uid:'',
+    nom:'',
+    prenom:'',
+    identifiant:'',
+    phone:'',
     email:'',
-    phoneNumber:'',
+    photo:'',
     photoURL:'',
-    methodConnexion:'',
+    connexionType:''
   };
 
   constructor(private router:Router,
               private fb: Facebook,
               public afDB: AngularFireDatabase,
+              private afs: AngularFirestore,
               public afAuth: AngularFireAuth,
               public platform: Platform,
               private storage:Storage,
@@ -76,7 +81,9 @@ export class AuthentificationService {
     //permet de colorer la bonne icone
     this.footService.pageCible='factures';
     //redirection
-    value?this.router.navigateByUrl('factures'):this.router.navigateByUrl('login');
+    //TODO modifier la redirection pour la version finale
+    //value?this.router.navigateByUrl('factures'):this.router.navigateByUrl('login');
+    value?this.router.navigateByUrl('profile'):this.router.navigateByUrl('login');
   }
 
   //sauvegarde du token de connexion
@@ -176,22 +183,78 @@ export class AuthentificationService {
     });
   }
 
-  inscriptionMail(dataUser) {
-    this.afAuth.auth.createUserWithEmailAndPassword(dataUser.email,dataUser.password);
+  async inscriptionMail(dataUser) {
+    //on crée l'utilisateur dans AfAuth et on se login
+    try {
+      //on crée l'utilisateur
+      await this.afAuth.auth.createUserWithEmailAndPassword(dataUser.email,dataUser.password);
+      // on récupère les infos nouvellement créé par l'utilisateur
+      this.afAuth.auth.signInWithEmailAndPassword(dataUser.email,dataUser.password).then(async data=>{
+        //on sauvegarde ce nouvel utilisateur dans firestore
+        await firebase.firestore().collection(`users`).doc(data.user.uid).set({
+          nom:dataUser.nom,
+          prenom:dataUser.prenom,
+          identifiant:dataUser.identifiant,
+          phone:dataUser.phone,
+          email:dataUser.email,
+          connexionType:dataUser.connexionType,
+          photo:null,
+          photoURL:null
+        });
+
+        //on continue la connexion comme la première fois
+        this.acceptedConnexion(data,'mail');
+      }, err=>{
+        console.log(err.code + " : " + err.message);
+      });
+
+      //dès que l'inscription a fonctionné, on le connecte
+      this.loginMail(dataUser);
+    } catch (e) {
+      console.log("Error in inscription : "+e)
+    }
   }
 
   /****************************************************************************************
-   *   fin de connexion par mail
+   *   fin de connexion par mail ou facebook
    *****************************************************************************************/
 
   //Connexion acceptée par firebase
-  private acceptedConnexion(success:UserCredential,methodConnexion:string){
+  async acceptedConnexion(success,methodConnexion:string){
+  //async acceptedConnexion(success:UserCredential,methodConnexion:string){
     //pour voir toute les infos recu par firebase console.log('Info Firebase: ' + JSON.stringify(success));
-    //on ajoute les données utiles de l'utilisateur dans la base FireBase
-    this.afDB.object('Users/'+success.user.uid).set({
-      displayName:success.user.displayName,
-      photoURL: success.user.photoURL
-    });
+    //on vérifie si l'utilisateur existe deja dans la base
+    if(methodConnexion=='facebook') {
+      await firebase.firestore().collection('users').where('email', '==', success.user.email)
+          .where('connexionType', '==', 'facebook')
+          .get().then(function(querySnapshot) {
+            //si l'utilisateur n'existe pas dans la base, on le crée
+            if (querySnapshot.docs.length = 0) {
+              //il existe un identifiant, normalement pas plus de 1
+              firebase.firestore().collection(`users`).doc(success.user.uid).set({
+                nom: success.additionalUserInfo.profile.last_name,
+                prenom: success.additionalUserInfo.profile.first_name,
+                identifiant: success.user.displayName,
+                phone: success.user.phoneNumber,
+                email: success.user.email,
+                photo:null,
+                photoURL:success.user.photoURL,
+                connexionType: 'facebook'
+              });
+            } else {
+              //sinon, on met à jour les donées
+              firebase.firestore().collection('users').doc(querySnapshot[0].id).update({
+                photoURL:success.user.photoURL,
+                identifiant: success.user.displayName,
+              })
+            }
+          })
+          .catch(function(error) {
+            console.log("Error getting documents: ", error);
+          });
+    } else if(methodConnexion=='mail'){
+      //pas besoin car la connexion par mail ne modifie pas les données il faut passer par la poge profil
+    }
 
     //Maintenant qu'on est authentifié auprès de firebase, on va alimenter les données dans l'application
     // on va créer l'utilisateur dans le storage avec toute ses informations
@@ -203,24 +266,38 @@ export class AuthentificationService {
 
   }
 
-  //Connexion avec le profil userFB, on le crée s'il n'existe pas déjà
+  //on crée l'utilisateur dans la base de donnée
   private createUser(infos:UserCredential, methodConnexion:string){
-    //on vérifie si l'utilisateur connecté est celui déjà existant
-    if(this.localUser.idFirebase!=infos.user.uid){
-      //on change les id et la method si l'utilisateur n'est pas le même
-      this.localUser.idFirebase=infos.user.uid;
-      this.localUser.idBackEnd='';
-      this.localUser.methodConnexion=methodConnexion;
+    var localUser={
+      uid:'',
+      nom:'',
+      prenom:'',
+      identifiant:'',
+      phone:'',
+      email:'',
+      photo:'',
+      photoURL:'',
+      connexionType:''
+    };
 
-      //TODO: supprimer toutes les factures si on se connecte avec un autre compte
-    }
-    //Si c'est le bon utilisateur, on met quand même à jour les données si par exemple il a fait des modification sur FB
-    this.localUser.email=infos.user.email;
-    this.localUser.photoURL=infos.user.photoURL;
-    this.localUser.phoneNumber=infos.user.phoneNumber;
-    this.localUser.displayName=infos.user.displayName;
+    //on récupère les infos de firestore
+    localUser.uid=infos.user.uid;
+    localUser.connexionType=methodConnexion;
+    firebase.firestore().collection('users').doc(infos.user.uid).get().then(function(doc) {
+      localUser.nom=doc.data().nom;
+      localUser.prenom=doc.data().prenom;
+      localUser.identifiant=doc.data().identifiant;
+      localUser.phone=doc.data().phone;
+      localUser.email=doc.data().email;
+      localUser.photo=doc.data().photo;
+      localUser.photoURL=doc.data().photoURL;
+    });
+
+    //on met à jour la variable locale
+    this.localUser=localUser;
 
     //on sauvegarde dans le storage les données de l'utilisateur
     this.storage.set("billaps:user",this.localUser);
+
   }
 }

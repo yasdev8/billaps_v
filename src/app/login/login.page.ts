@@ -73,11 +73,6 @@ export class LoginPage implements OnInit {
   }
 
   InscriptionMail() {
-    this.authService.inscriptionMail(this.dataUser);
-    //on réinitialise le formulaire
-    this.dataUser={
-      email:'',
-      password:''
-    };
+    this.router.navigateByUrl('inscription');
   }
 }

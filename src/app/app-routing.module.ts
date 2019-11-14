@@ -15,6 +15,7 @@ const routes: Routes = [
   { path: 'test-chat', loadChildren: './test-chat/test-chat.module#TestChatPageModule' },
   { path: 'fcm', loadChildren: './fcm/fcm.module#FcmPageModule' },
   { path: 'profile', loadChildren: './profile/profile.module#ProfilePageModule' },
+  { path: 'inscription', loadChildren: './inscription/inscription.module#InscriptionPageModule' },
 ];
 
 @NgModule({

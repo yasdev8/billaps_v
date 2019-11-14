@@ -1,0 +1,57 @@
+<ion-header>
+  <ion-toolbar color="danger">
+    <ion-title>Inscription</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+
+
+  <br>
+  <br>
+  <br>
+
+  <ion-item>
+    <ion-label>Nom : </ion-label>
+    <ion-input type="email" [(ngModel)]="dataUser.nom"></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-label>Prénom : </ion-label>
+    <ion-input type="email" [(ngModel)]="dataUser.prenom"></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-label>Identifiant : </ion-label>
+    <ion-input type="email" [(ngModel)]="dataUser.identifiant"></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-label>Téléphone : </ion-label>
+    <ion-input type="number" [(ngModel)]="dataUser.phone"></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-label>Email : </ion-label>
+    <ion-input type="email" [(ngModel)]="dataUser.email"></ion-input>
+  </ion-item>
+  <div class="red">
+    <ion-item *ngIf="messErr!=null">
+      <ion-label>Password : </ion-label>
+      <ion-input type="password" [(ngModel)]="dataUser.password"></ion-input>
+    </ion-item>
+  </div>
+  <ion-item *ngIf="messErr==null">
+    <ion-label>Password : </ion-label>
+    <ion-input type="password" [(ngModel)]="dataUser.password"></ion-input>
+  </ion-item>
+  <div class="red">
+    <ion-item *ngIf="messErr!=null">
+      <ion-label>Password again : </ion-label>
+      <ion-input type="password" [(ngModel)]="dataUser.password2"></ion-input>
+    </ion-item>
+  </div>
+  <ion-item *ngIf="messErr==null">
+    <ion-label>Password again : </ion-label>
+    <ion-input type="password" [(ngModel)]="dataUser.password2"></ion-input>
+  </ion-item>
+  <br>
+  <ion-button expand="block" (click)="InscriptionMail()" color="tertiary">Inscription</ion-button>
+</ion-content>
