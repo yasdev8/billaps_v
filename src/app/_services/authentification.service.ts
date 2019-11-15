@@ -9,7 +9,6 @@ import {AngularFireDatabase} from "@angular/fire/database";
 import UserCredential = firebase.auth.UserCredential;
 import {Storage} from "@ionic/storage";
 import {AngularFirestore} from '@angular/fire/firestore';
-import {ignore} from 'selenium-webdriver/testing';
 
 @Injectable({
   providedIn: 'root'
@@ -191,7 +190,8 @@ export class AuthentificationService {
       // on récupère les infos nouvellement créé par l'utilisateur
       this.afAuth.auth.signInWithEmailAndPassword(dataUser.email,dataUser.password).then(async data=>{
         //on sauvegarde ce nouvel utilisateur dans firestore
-        await firebase.firestore().collection(`users`).doc(data.user.uid).set({
+        await firebase.firestore().collection(`users`).add({
+          id:data.user.uid,
           nom:dataUser.nom,
           prenom:dataUser.prenom,
           identifiant:dataUser.identifiant,
@@ -229,21 +229,22 @@ export class AuthentificationService {
           .where('connexionType', '==', 'facebook')
           .get().then(function(querySnapshot) {
             //si l'utilisateur n'existe pas dans la base, on le crée
-            if (querySnapshot.docs.length = 0) {
+            if (querySnapshot.docs.length == 0) {
               //il existe un identifiant, normalement pas plus de 1
-              firebase.firestore().collection(`users`).doc(success.user.uid).set({
-                nom: success.additionalUserInfo.profile.last_name,
-                prenom: success.additionalUserInfo.profile.first_name,
-                identifiant: success.user.displayName,
-                phone: success.user.phoneNumber,
-                email: success.user.email,
-                photo:null,
-                photoURL:success.user.photoURL,
-                connexionType: 'facebook'
+              firebase.firestore().collection('users').add({
+                  id:success.user.uid,
+                  nom: success.additionalUserInfo.profile.last_name,
+                  prenom: success.additionalUserInfo.profile.first_name,
+                  identifiant: success.user.displayName,
+                  phone: success.user.phoneNumber,
+                  email: success.user.email,
+                  photo:null,
+                  photoURL:success.user.photoURL,
+                  connexionType: 'facebook'
               });
             } else {
               //sinon, on met à jour les donées
-              firebase.firestore().collection('users').doc(querySnapshot[0].id).update({
+              firebase.firestore().collection('users').doc(querySnapshot.docs[0].id).update({
                 photoURL:success.user.photoURL,
                 identifiant: success.user.displayName,
               })
@@ -267,7 +268,7 @@ export class AuthentificationService {
   }
 
   //on crée l'utilisateur dans la base de donnée
-  private createUser(infos:UserCredential, methodConnexion:string){
+  async createUser(infos:UserCredential, methodConnexion:string){
     var localUser={
       uid:'',
       nom:'',
@@ -283,15 +284,26 @@ export class AuthentificationService {
     //on récupère les infos de firestore
     localUser.uid=infos.user.uid;
     localUser.connexionType=methodConnexion;
-    firebase.firestore().collection('users').doc(infos.user.uid).get().then(function(doc) {
-      localUser.nom=doc.data().nom;
-      localUser.prenom=doc.data().prenom;
-      localUser.identifiant=doc.data().identifiant;
-      localUser.phone=doc.data().phone;
-      localUser.email=doc.data().email;
-      localUser.photo=doc.data().photo;
-      localUser.photoURL=doc.data().photoURL;
-    });
+
+      await firebase.firestore().collection('users').where('id', '==', infos.user.uid)
+          .get().then(function(querySnapshot) {
+              //si l'utilisateur n'existe pas dans la base, on le crée
+              if (querySnapshot.docs.length == 1) {
+                  //on a récupérer le bon utlisateur
+                  localUser.nom=querySnapshot.docs[0].data().nom;
+                  localUser.prenom=querySnapshot.docs[0].data().prenom;
+                  localUser.identifiant=querySnapshot.docs[0].data().identifiant;
+                  localUser.phone=querySnapshot.docs[0].data().phone;
+                  localUser.email=querySnapshot.docs[0].data().email;
+                  localUser.photo=querySnapshot.docs[0].data().photo;
+                  localUser.photoURL=querySnapshot.docs[0].data().photoURL;
+              } else {
+                  console.log("on ne retrouve pas le profil avec l'id user : "+infos.user.uid)
+              }
+          })
+          .catch(function(error) {
+              console.log("Error getting documents: ", error);
+          });
 
     //on met à jour la variable locale
     this.localUser=localUser;
