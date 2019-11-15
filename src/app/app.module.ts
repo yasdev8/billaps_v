@@ -26,7 +26,7 @@ import { FileOpener } from "@ionic-native/file-opener/ngx";
 import { FcmService } from './_services/fcm.service';
 import {HttpClientModule} from '@angular/common/http';
 import {EmailComposer} from '@ionic-native/email-composer/ngx';
-import {Constantes} from './_model/constantes';
+import {_constantes} from './_model/_constantes';
 import {OrderModule} from 'ngx-order-pipe';
 
 
@@ -67,7 +67,7 @@ export const firebaseConfig = {
             ]
         })],
     providers: [
-        Constantes,
+        _constantes,
         StatusBar,
         SplashScreen,
         Facebook,
