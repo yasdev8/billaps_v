@@ -1,7 +1,7 @@
 .header{
   background-color: #5e98ff;
-  height: 180px;
-  padding-top: 15px;
+  height: 150px;
+  padding-top: 10px;
 }
 
 .header h2 {
@@ -13,7 +13,7 @@
 .space-between{
   display: flex;
   justify-content: space-between;
-  padding: 20px 40px 0px 40px;
+  padding: 10px 40px 0px 40px;
 }
 
 .badge{
@@ -64,4 +64,19 @@
   display: flex;
   justify-content: center;
   margin-top: -76px;
+}
+
+ion-col{
+  display: flex;
+}
+
+.flex-head{
+  display: flex;
+  margin-top: -110px;
+  color: #fff;
+}
+
+ion-toolbar {
+  --background: transparent;
+  --ion-color-base: transparent !important;
 }

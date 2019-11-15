@@ -26,6 +26,7 @@ export class AuthentificationService {
     uid:'',
     nom:'',
     prenom:'',
+    sexe:null,
     identifiant:'',
     phone:'',
     email:'',
@@ -80,9 +81,9 @@ export class AuthentificationService {
     //permet de colorer la bonne icone
     this.footService.pageCible='factures';
     //redirection
-    //TODO modifier la redirection pour la version finale
+    //TODO modifier la redirection pour le test
     //value?this.router.navigateByUrl('factures'):this.router.navigateByUrl('login');
-    value?this.router.navigateByUrl('profile'):this.router.navigateByUrl('login');
+    value?this.router.navigateByUrl('factures'):this.router.navigateByUrl('login');
   }
 
   //sauvegarde du token de connexion
@@ -140,10 +141,14 @@ export class AuthentificationService {
   private facebookCordova() {
     //cela va lancer l'authentification via facebook avec validation par le module facebook
     this.fb.login(['email']).then( (response) => {
+      console.log("response");
+      console.log(response);
       const facebookCredential = firebase.auth.FacebookAuthProvider
           .credential(response.authResponse.accessToken);
       firebase.auth().signInWithCredential(facebookCredential)
           .then((success) => {
+            console.log("success");
+            console.log(success);
             //validé par Facebbok, on continue la connexion
             this.acceptedConnexion(success,'facebook');
 
@@ -194,6 +199,7 @@ export class AuthentificationService {
           id:data.user.uid,
           nom:dataUser.nom,
           prenom:dataUser.prenom,
+          sexe:dataUser.sexe,
           identifiant:dataUser.identifiant,
           phone:dataUser.phone,
           email:dataUser.email,
@@ -235,6 +241,7 @@ export class AuthentificationService {
                   id:success.user.uid,
                   nom: success.additionalUserInfo.profile.last_name,
                   prenom: success.additionalUserInfo.profile.first_name,
+                  sexe:null,
                   identifiant: success.user.displayName,
                   phone: success.user.phoneNumber,
                   email: success.user.email,
@@ -247,7 +254,7 @@ export class AuthentificationService {
               firebase.firestore().collection('users').doc(querySnapshot.docs[0].id).update({
                 photoURL:success.user.photoURL,
                 identifiant: success.user.displayName,
-              })
+              });
             }
           })
           .catch(function(error) {
@@ -273,6 +280,7 @@ export class AuthentificationService {
       uid:'',
       nom:'',
       prenom:'',
+      sexe:'',
       identifiant:'',
       phone:'',
       email:'',
@@ -292,6 +300,7 @@ export class AuthentificationService {
                   //on a récupérer le bon utlisateur
                   localUser.nom=querySnapshot.docs[0].data().nom;
                   localUser.prenom=querySnapshot.docs[0].data().prenom;
+                  localUser.sexe=querySnapshot.docs[0].data().sexe;
                   localUser.identifiant=querySnapshot.docs[0].data().identifiant;
                   localUser.phone=querySnapshot.docs[0].data().phone;
                   localUser.email=querySnapshot.docs[0].data().email;
@@ -311,5 +320,37 @@ export class AuthentificationService {
     //on sauvegarde dans le storage les données de l'utilisateur
     this.storage.set("billaps:user",this.localUser);
 
+  }
+
+  /*****************************************************************************************
+  ** Gestion du profil utilisateur
+   *****************************************************************************************/
+  async  updateUser(){
+    //on initialise une variable locale
+    var lucalUser=this.localUser;
+
+    //on met à jour dans firebase
+    await firebase.firestore().collection('users').where('id','==',this.localUser.uid).get()
+        .then(async function(querySnapshot) {
+          //si l'utilisateur n'existe pas dans la base, on le crée
+          if (querySnapshot.docs.length == 1) {
+            //on met à jour les données de l'utilisateur dans la base firestore
+            await firebase.firestore().collection('users').doc(querySnapshot.docs[0].id).update({
+              nom:lucalUser.nom,
+              prenom:lucalUser.prenom,
+              identifiant:lucalUser.identifiant,
+              email:lucalUser.email,
+              phone:lucalUser.phone,
+            });
+          } else {
+            console.log("on ne retrouve pas le profil avec l'id user : "+ this.localUser.uid)
+          }
+        })
+        .catch(function(error) {
+          console.log("Error getting documents: ", error);
+        });
+
+    // on met à jour dans le local storage
+    await this.storage.set("billaps:user",this.localUser);
   }
 }

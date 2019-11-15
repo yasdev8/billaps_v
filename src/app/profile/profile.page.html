@@ -13,29 +13,102 @@
         <p>Contacts</p>
       </div>
     </div>
+
+    <div class="flex-head">
+      <ion-buttons slot="start">
+        <ion-button (click)="back()">
+          <ion-icon name="arrow-back"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </div>
   </div>
 
   <div class="flex">
     <div class="border-blue">
       <div class="border-img">
         <div class="img-box">
-          <img src="../../assets/img/ProjectManager_Yassine Khelifa_2.jpg">
+          <img *ngIf="authService.localUser.photo!=null" src="authService.localUser.photo">
+          <img *ngIf="((authService.localUser.photo==null)&&(authService.localUser.photoURL!=null))"
+               src="authService.localUser.photoURL">
+          <img *ngIf="((authService.localUser.photo==null)&&(authService.localUser.photoURL==null)
+          &&(authService.localUser.sexe=='M'))" src="../../assets/img/male-profile-default.png">
+          <img *ngIf="((authService.localUser.photo==null)&&(authService.localUser.photoURL==null)
+          &&(authService.localUser.sexe=='F'))" src="../../assets/img/female-profile-default.png">
         </div>
       </div>
     </div>
   </div>
+
+  <ion-toolbar *ngIf="!modeEdit" class="flex">
+    <ion-buttons slot="end">
+      <ion-button (click)="editMode()">
+        <ion-icon name="create" color="primary"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <ion-toolbar *ngIf="modeEdit" class="flex">
+  </ion-toolbar>
 
   <br>
 
   <div class="ion-padding">
     <ion-list>
       <ion-item>
-        <ion-icon name="home" color="primary"></ion-icon>
-        <ion-label>&nbsp;Nom : </ion-label>
-        <ion-input type="text" name="nom" ngModel></ion-input>
+        <ion-col size="4">
+          <ion-icon name="contact" color="primary"></ion-icon>
+          <ion-label>&nbsp;Nom  </ion-label>
+        </ion-col>
+        <ion-col size="8">
+          <ion-input *ngIf="!modeEdit" type="text" [(ngModel)]="authService.localUser.nom" readonly></ion-input>
+          <ion-input *ngIf="modeEdit" type="text" [(ngModel)]="authService.localUser.nom"></ion-input>
+        </ion-col>
+      </ion-item>
+      <ion-item>
+        <ion-col size="4">
+          <ion-icon name="contact" color="primary"></ion-icon>
+          <ion-label>&nbsp;Prénom </ion-label>
+        </ion-col>
+        <ion-col size="8">
+          <ion-input *ngIf="!modeEdit" type="text" [(ngModel)]="authService.localUser.prenom" readonly></ion-input>
+          <ion-input *ngIf="modeEdit" type="text" [(ngModel)]="authService.localUser.prenom"></ion-input>
+        </ion-col>
+      </ion-item>
+      <ion-item>
+        <ion-col size="4">
+          <ion-icon name="contact" color="primary"></ion-icon>
+          <ion-label>&nbsp;Identifiant </ion-label>
+        </ion-col>
+        <ion-col size="8">
+          <ion-input *ngIf="!modeEdit" type="text" [(ngModel)]="authService.localUser.identifiant" readonly></ion-input>
+          <ion-input *ngIf="modeEdit" type="text" [(ngModel)]="authService.localUser.identifiant"></ion-input>
+        </ion-col>
+      </ion-item>
+      <ion-item>
+        <ion-col size="4">
+          <ion-icon name="mail" color="primary"></ion-icon>
+          <ion-label>&nbsp;Email </ion-label>
+        </ion-col>
+        <ion-col size="8">
+          <ion-input *ngIf="!modeEdit" type="text" [(ngModel)]="authService.localUser.email" readonly></ion-input>
+          <ion-input *ngIf="modeEdit" type="text" [(ngModel)]="authService.localUser.email"></ion-input>
+        </ion-col>
+      </ion-item>
+      <ion-item>
+        <ion-col size="4">
+          <ion-icon name="call" color="primary"></ion-icon>
+          <ion-label>&nbsp;Téléphone </ion-label>
+        </ion-col>
+        <ion-col size="8">
+          <ion-input *ngIf="!modeEdit" type="text" [(ngModel)]="phone" readonly></ion-input>
+          <ion-input *ngIf="modeEdit" type="number" [(ngModel)]="phone"></ion-input>
+        </ion-col>
       </ion-item>
     </ion-list>
   </div>
+  <br>
+
+  <ion-button *ngIf="modeEdit" class="submit-btn" expand="block" (click)="update()">Update</ion-button>
 
 </ion-content>
 

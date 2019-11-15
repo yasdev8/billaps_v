@@ -3,6 +3,7 @@ import {AuthentificationService} from '../_services/authentification.service';
 import * as firebase from 'firebase/app';
 import {AngularFireDatabase} from '@angular/fire/database';
 import {AngularFirestore} from '@angular/fire/firestore';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'app-inscription',
@@ -16,19 +17,25 @@ export class InscriptionPage implements OnInit {
     nom:'',
     prenom:'',
     identifiant:'',
+    sexe:'',
     phone:'',
     email:'',
     password:'',
     password2:'',
     connexionType:'mail'
   };
+  public sexe:string;
+
   //variable messageErr
   messErr:string=null;
   step:number=0;
 
   constructor(
       private authService:AuthentificationService,
-      ) { }
+      private router:Router,
+      ) {
+    this.sexe="M";
+  }
 
   ngOnInit() {
   }
@@ -41,6 +48,8 @@ export class InscriptionPage implements OnInit {
 
     //Si tout est ok, on lance l'inscription
     if(checkD){
+      //on ajoute le sexe
+      this.dataUser.sexe=this.sexe;
       //on lance l'inscription
       this.authService.inscriptionMail(this.dataUser);
     } else{
@@ -131,5 +140,9 @@ export class InscriptionPage implements OnInit {
     //si jusqu'ici, pas de retour, nous avons passé tous les tests
     this.step=step;
     return check;
+  }
+
+  annuler(){
+    this.router.navigateByUrl('login');
   }
 }
