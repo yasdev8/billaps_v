@@ -2,7 +2,7 @@
   <ion-toolbar>
     <!-- <ion-buttons > -->
     <div class="plusClass" slot="end">
-      <ion-icon name="add" expand="icon-only" color="success"> </ion-icon>
+      <ion-icon name="add" expand="icon-only" color="success" (click)="searchNewContact()"> </ion-icon>
     </div>
     <!-- </ion-buttons> -->
     <ion-title color="light">
@@ -22,7 +22,7 @@
         </div>
       </ion-segment-button>
 
-      <ion-segment-button mode="md" value="friends">
+      <ion-segment-button mode="md" value="contacts">
         <div class="contentCenter">
           <ion-icon name="person" slot="start" class="padding_right tab-icon"></ion-icon>
           <ion-text slot=end>Contacts</ion-text>
@@ -43,9 +43,11 @@
 
 <ion-content>
 
-  <ion-searchbar mode="md" placeholder="Search your friend"></ion-searchbar>
+  <ion-searchbar *ngIf="!newContact&&(segmentTab == 'contacts')" mode="md" placeholder="Search your friend"></ion-searchbar>
+  <ion-searchbar *ngIf="newContact&&(segmentTab == 'contacts')" mode="md" placeholder="new contact"
+    (ionChange)="onInputSearch($event)" [(ngModel)]="seeNewContact"></ion-searchbar>
 
-  <!-- <content> -->
+  <!-- Chat -->
   <ion-list *ngIf="segmentTab == 'chat' " class="ion-no-padding">
 
     <ion-item *ngFor="let chat of chatData"  lines="none">
@@ -76,7 +78,23 @@
 
 
   </ion-list>
-  <!-- </content> -->
+  <!-- Chat -->
+
+  <!-- Contacts -->
+  <ion-list *ngIf="(segmentTab == 'contacts')&&(contactsService.localUser.contacts.length!=0)&&!newContact" class="ion-padding">
+    <ion-item *ngFor="let contact of contactsService.localUser.contacts"  lines="none">
+      <p>{{contact.identifiant}}</p>
+    </ion-item>
+  </ion-list>
+
+  <!-- New contact liste -->
+  <ion-list *ngIf="(segmentTab == 'contacts')&&newContact&&newContactData.length!=0&&(seeNewContact.length!=0)"
+            class="ion-padding">
+    <ion-item *ngFor="let contact of newContactData" class="newContact">
+      <p>{{contact.identifiant}}</p>
+    </ion-item>
+  </ion-list>
+  <!-- Contacts -->
 </ion-content>
 
 

@@ -9,6 +9,7 @@ import {AngularFireDatabase} from "@angular/fire/database";
 import UserCredential = firebase.auth.UserCredential;
 import {Storage} from "@ionic/storage";
 import {AngularFirestore} from '@angular/fire/firestore';
+import {User} from '../_model/user';
 
 @Injectable({
   providedIn: 'root'
@@ -22,17 +23,18 @@ export class AuthentificationService {
   public token:string;
 
   //variable de l'utilisateur en localStorage
-  public localUser={
-    uid:'',
-    nom:'',
-    prenom:'',
-    sexe:null,
-    identifiant:'',
-    phone:'',
-    email:'',
-    photo:'',
-    photoURL:'',
-    connexionType:''
+  public localUser:User=new class implements User {
+    connexionType: string;
+    email: string;
+    identifiant: string;
+    nom: string;
+    phone: any;
+    photo: string;
+    photoURL: string;
+    prenom: string;
+    sexe: string;
+    uid: string;
+    contacts:Array<any>;
   };
 
   constructor(private router:Router,
@@ -277,16 +279,17 @@ export class AuthentificationService {
   //on crée l'utilisateur dans la base de donnée
   async createUser(infos:UserCredential, methodConnexion:string){
     var localUser={
-      uid:'',
-      nom:'',
-      prenom:'',
-      sexe:'',
-      identifiant:'',
-      phone:'',
-      email:'',
-      photo:'',
-      photoURL:'',
-      connexionType:''
+      connexionType: '',
+      email: '',
+      identifiant: '',
+      nom: '',
+      phone: '',
+      photo: '',
+      photoURL: '',
+      prenom: '',
+      sexe: '',
+      contacts:Array<any>(),
+      uid: ''
     };
 
     //on récupère les infos de firestore
@@ -306,6 +309,7 @@ export class AuthentificationService {
                   localUser.email=querySnapshot.docs[0].data().email;
                   localUser.photo=querySnapshot.docs[0].data().photo;
                   localUser.photoURL=querySnapshot.docs[0].data().photoURL;
+                  localUser.contacts=querySnapshot.docs[0].data().contacts?querySnapshot.docs[0].data().contacts:[];
               } else {
                   console.log("on ne retrouve pas le profil avec l'id user : "+infos.user.uid)
               }

@@ -1,17 +1,13 @@
 export interface User {
-    idApp:number;
-    idBack?:number;
-    title:string;
-    emetteur?:string;
-    dateAjout?:Date;
-    dateModif?:Date;
-    dateFacture?:Date;
-    photoTitle?:string;
-    photos?:string;
-    photoType:string;
-    pdfPath?:string;
-    pdf?:any;
-    pdfBlob?:any;
-    prixTTC?:number;
-    prixHT?:number;
+    uid:string,
+    nom:string,
+    prenom:string,
+    sexe:string,
+    identifiant:string,
+    phone:any,
+    email:string,
+    photo:string,
+    photoURL:string,
+    connexionType:string,
+    contacts:Array<any>
 }

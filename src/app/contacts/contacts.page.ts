@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import {Router} from "@angular/router";
+import {ContactsService} from '../_services/contacts.service';
+import * as firebase from 'firebase/app';
 
 @Component({
   selector: 'app-contacts',
@@ -9,8 +11,14 @@ import {Router} from "@angular/router";
 export class ContactsPage implements OnInit {
   segmentTab: any;
   public chatData:Array<any>;
+  public newContactData:Array<any>=[];
+  public newContact=false;
+  public seeNewContact:string='';
+  public isToutContactCharge:boolean;
+  public listeToutContacts:Array<any>=[];
 
-  constructor(private route: Router) {
+  constructor(private route: Router,
+              public contactsService:ContactsService) {
 
   }
 
@@ -20,7 +28,30 @@ export class ContactsPage implements OnInit {
   }
 
   ionViewWillEnter(){
+    //on récupère la liste des contacts
+    this.contactsService.getListeContacts();
+    //on initialise la variable de chargement de l'ensemble des utilisateurs
+    this.isToutContactCharge=false;
   }
+
+  //permet d'afficher le champ de recherche pour un nouveau contact
+  searchNewContact(){
+    this.newContact=!this.newContact;
+  }
+
+  //methode qui permet de lancher la recherche dès qu'une valeur est saisie
+  async onInputSearch($event){
+    this.newContactData=[];
+    //on regarde si on a déjà chargé la liste de tous les contacts
+    //TODO voir si on met cette méthode directement dès qu'on appui sur le +
+    if(!this.isToutContactCharge){
+      this.listeToutContacts = await this.contactsService.searchNew();
+      this.isToutContactCharge=true;
+    }
+    //on alimente la liste des utilisateurs recherché
+    this.newContactData = this.listeToutContacts.filter(e => e.identifiant.toLowerCase().includes(this.seeNewContact.toLowerCase()));
+  }
+
 
   async initData(){
     this.chatData = [{

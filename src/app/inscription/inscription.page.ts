@@ -4,6 +4,7 @@ import * as firebase from 'firebase/app';
 import {AngularFireDatabase} from '@angular/fire/database';
 import {AngularFirestore} from '@angular/fire/firestore';
 import {Router} from '@angular/router';
+import {User} from '../_model/user';
 
 @Component({
   selector: 'app-inscription',

@@ -11,7 +11,7 @@ import {FileOpener} from "@ionic-native/file-opener/ngx";
 import {scan} from "rxjs/operators";
 //import {DocumentScannerOptions} from "@ionic-native/document-scanner";
 import {AngularFireStorage} from "@angular/fire/storage";
-import {_constantes} from '../_model/_constantes';
+import {constantes} from '../_model/_constantes';
 //import de toutes les fonctions de PDFmake
 import * as pdfMake from 'pdfmake/build/pdfmake.js';
 import * as pdfFonts from 'pdfmake/build/vfs_fonts.js';
@@ -58,7 +58,7 @@ export class FactureNewPage implements OnInit {
     upload: any;
 
   constructor(private navCtrl:NavController,
-              public constantes:_constantes,
+              public constantes:constantes,
               public formBuilder:FormBuilder,
               private router:Router,
               private file:File,
