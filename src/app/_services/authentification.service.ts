@@ -35,6 +35,7 @@ export class AuthentificationService {
     sexe: string;
     uid: string;
     contacts:Array<any>;
+    demandeContact:Array<any>;
   };
 
   constructor(private router:Router,
@@ -289,6 +290,7 @@ export class AuthentificationService {
       prenom: '',
       sexe: '',
       contacts:Array<any>(),
+      demandeContact:Array<any>(),
       uid: ''
     };
 
@@ -310,6 +312,7 @@ export class AuthentificationService {
                   localUser.photo=querySnapshot.docs[0].data().photo;
                   localUser.photoURL=querySnapshot.docs[0].data().photoURL;
                   localUser.contacts=querySnapshot.docs[0].data().contacts?querySnapshot.docs[0].data().contacts:[];
+                  localUser.demandeContact=querySnapshot.docs[0].data().demandeContact?querySnapshot.docs[0].data().demandeContact:[];
               } else {
                   console.log("on ne retrouve pas le profil avec l'id user : "+infos.user.uid)
               }

@@ -32,6 +32,8 @@ export class ContactsPage implements OnInit {
     this.contactsService.getListeContacts();
     //on initialise la variable de chargement de l'ensemble des utilisateurs
     this.isToutContactCharge=false;
+
+    console.log(this.contactsService.localUser.demandeContact.length)
   }
 
   //permet d'afficher le champ de recherche pour un nouveau contact
@@ -49,7 +51,32 @@ export class ContactsPage implements OnInit {
       this.isToutContactCharge=true;
     }
     //on alimente la liste des utilisateurs recherché
-    this.newContactData = this.listeToutContacts.filter(e => e.identifiant.toLowerCase().includes(this.seeNewContact.toLowerCase()));
+    this.newContactData = this.listeToutContacts.filter(e =>
+        //on vérifie en fonction de l'identifiant, mail ou téléphone
+        ((e.identifiant.toLowerCase().includes(this.seeNewContact.toLowerCase())||
+            (e.email.toLowerCase().includes(this.seeNewContact.toLowerCase()))||
+            (('0'+e.phone).toLowerCase().includes(this.seeNewContact.toLowerCase())))
+        // on évite de prendre en compte son propre profil
+        &&(e.email!=this.contactsService.localUser.email))
+    );
+
+    //on regarde si les utilisateurs trouvés sont déjà des amis
+    await this.newContactData.forEach(async (contact)=>{
+      contact.added=null;
+      await this.contactsService.localUser.contacts.forEach((ami)=>{
+        if(ami.email==contact.email){
+          contact.added=ami.added;
+        }
+      })
+    });
+  }
+
+  //permet d'ajouter un contact à sa liste d'ami
+  ajouterContact(contact){
+    //on montre la demande
+    contact.added='demande';
+    //on lance l'ajout via le mail
+    this.contactsService.ajouterContact(contact);
   }
 
 

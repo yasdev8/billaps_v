@@ -9,5 +9,6 @@ export interface User {
     photo:string,
     photoURL:string,
     connexionType:string,
-    contacts:Array<any>
+    contacts:Array<any>,
+    demandeContact:Array<any>
 }
