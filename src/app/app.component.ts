@@ -33,37 +33,8 @@ export class AppComponent {
     this.platform.ready().then(() => {
       this.statusBar.styleDefault();
       this.splashScreen.hide();
-      //FCM
-      this.notificationSetup();
+      //on lance l'authentification
       this.authService.tryLogin();
     });
-  }
-
-  private notificationSetup() {
-    this.fcm.getToken();
-    this.fcm.onNotifications().subscribe(
-        (msg) => {
-          //Phone
-          if(this.platform.is('cordova')) {
-            if (this.platform.is('ios')) {
-              this.presentToast(msg.aps.alert);
-            } else {
-              this.presentToast(msg.body);
-              console.log("message : "+msg);
-            }
-          } else {
-            //Web
-            //TODO : notification de message pour le web
-
-          }
-        });
-  }
-
-  private async presentToast(message) {
-    const toast = await this.toastController.create({
-      message,
-      duration: 3000
-    });
-    toast.present();
   }
 }

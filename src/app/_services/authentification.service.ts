@@ -4,12 +4,13 @@ import {FootNavService} from "./foot-nav.service";
 import * as firebase from 'firebase/app';
 import {Facebook} from "@ionic-native/facebook/ngx";
 import {AngularFireAuth} from "@angular/fire/auth";
-import {Platform} from "@ionic/angular";
+import {Platform, ToastController} from '@ionic/angular';
 import {AngularFireDatabase} from "@angular/fire/database";
 import UserCredential = firebase.auth.UserCredential;
 import {Storage} from "@ionic/storage";
 import {AngularFirestore} from '@angular/fire/firestore';
 import {User} from '../_model/user';
+import {FcmService} from './fcm.service';
 
 @Injectable({
   providedIn: 'root'
@@ -45,6 +46,8 @@ export class AuthentificationService {
               public afAuth: AngularFireAuth,
               public platform: Platform,
               private storage:Storage,
+              private fcm: FcmService,
+              public toastController:ToastController,
               private footService:FootNavService) {
     //on alimente le fournisseur de donnée de Facebook dans la variable prévue
     this.providerFb = new firebase.auth.FacebookAuthProvider();
@@ -83,6 +86,11 @@ export class AuthentificationService {
   private goAfterLogin(value:boolean){
     //permet de colorer la bonne icone
     this.footService.pageCible='factures';
+    //On crée l'instance de création des notification pour l'user (FCM)
+    if(value){
+      this.notificationSetup();
+    }
+
     //redirection
     //TODO modifier la redirection pour le test
     //value?this.router.navigateByUrl('factures'):this.router.navigateByUrl('login');
@@ -359,5 +367,37 @@ export class AuthentificationService {
 
     // on met à jour dans le local storage
     await this.storage.set("billaps:user",this.localUser);
+  }
+
+  /******************************************************************************************
+  ** FCM notification
+   ******************************************************************************************/
+  //Permet d'instancier le fonctionnement des notifications
+  private notificationSetup() {
+    this.fcm.getToken(this.localUser.uid);
+    this.fcm.onNotifications().subscribe(
+        (msg) => {
+          //Phone
+          if(this.platform.is('cordova')) {
+            if (this.platform.is('ios')) {
+              this.presentToast(msg.aps.alert);
+            } else {
+              this.presentToast(msg.body);
+              console.log("message : "+msg);
+            }
+          } else {
+            //Web
+            //TODO : notification de message pour le web
+
+          }
+        });
+  }
+
+  private async presentToast(message) {
+    const toast = await this.toastController.create({
+      message,
+      duration: 3000
+    });
+    toast.present();
   }
 }

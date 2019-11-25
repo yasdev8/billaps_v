@@ -10,7 +10,7 @@ export class FcmService {
               private afs: AngularFirestore,
               private platform: Platform) {}
 
-  async getToken() {
+  async getToken(uid:string) {
     let token;
 
     //phone
@@ -24,7 +24,7 @@ export class FcmService {
         await this.firebase.grantPermission();
       }
 
-      this.saveToken(token);
+      this.saveToken(token,uid);
     } else {
       //Web
       //TODO : get token for angular web application
@@ -32,14 +32,16 @@ export class FcmService {
     }
   }
 
-  private saveToken(token) {
+  private saveToken(token,uid) {
     if (!token) return;
 
     const devicesRef = this.afs.collection('devices');
 
+    //TODO il faut vérifier que l'utilisateur n'a pas un device deja donc s'il se connecte à un autre device, il faut le déconnecter du premier et mettre à jour le token (plutot le supprimer et recréer)
+
     const data = {
       token,
-      userId: 'testUserId'
+      userId: uid
     };
 
     return devicesRef.doc(token).set(data);
