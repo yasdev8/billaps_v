@@ -1,16 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, Injectable, OnInit} from '@angular/core';
 import {FcmService} from '../_services/fcm.service';
 import {ToastController} from '@ionic/angular';
 import { tap } from 'rxjs/operators';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
-//import * as admin from "firebase-admin";
+//import * as admin from 'firebase-admin';
 
 @Component({
   selector: 'app-fcm',
   templateUrl: './fcm.page.html',
   styleUrls: ['./fcm.page.scss'],
 })
+@Injectable()
 export class FcmPage implements OnInit {
+  public message:string;
   public toToken:string;
   constructor(
       public fcm:FcmService,
@@ -94,8 +96,17 @@ export class FcmPage implements OnInit {
    */
 
   test(){
+    this.fcm.send(this.message)
+        .subscribe(data=>{
+          console.log(data)
+        }, err=>{
+          console.log(err);
+        })
+  }
+
+  testold(){
     // This registration token comes from the client FCM SDKs.
-    var registrationToken = 'c9r5gv5mBJ0:APA91bG3RhDagsP70fdFWe_GvrHTUtf_4Uhhvzh_AZCz90j9p119xGbmsgpuYoAWjAnlvpi1Ruo4KSj9UJCVK1Fgvtk-u05HQ5ITpY1wVztDuPJFqZrcY8PH0AbuTeVZM-2ryvYNkPg3';
+    var registrationToken = 'fyxq3JxrwMI:APA91bE14Vtw7bQTu2MYnOAGeA7GCk8j6AHsV3xqZ8yYBRuIrXD2NVMzTYxqs0OjibhViG399yDPldgDkj0tBQSbC4uGfxfvVazapngVPl6UwURlRM8JVAgbUVJ7DEJmEo--TGj830SS';
 
     var message = {
       notification: {
@@ -110,17 +121,27 @@ export class FcmPage implements OnInit {
       },
       token: registrationToken
     };
-/*
+
     // Send a message to the device corresponding to the provided
-    // registration token.
-    admin.messaging().send(message)
-        .then((response) => {
-          // Response is a message ID string.
-          console.log('Successfully sent message:', response);
-        })
-        .catch((error) => {
-          console.log('Error sending message:', error);
-        });*/
+      /* coté serveur
+          var admin = require("firebase-admin");
+
+          var serviceAccount = require("/billaps-v0-firebase-adminsdk-q0494-bb2363386f.json");
+
+          admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount),
+            databaseURL: "https://billaps-v0.firebaseio.com"
+          });
+
+              // registration token.
+              admin.messaging().send(message)
+                  .then((response) => {
+                    // Response is a message ID string.
+                    console.log('Successfully sent message:', response);
+                  })
+                  .catch((error) => {
+                    console.log('Error sending message:', error);
+                  });*/
 
   }
 

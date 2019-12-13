@@ -207,7 +207,7 @@ export class AuthentificationService {
       this.afAuth.auth.signInWithEmailAndPassword(dataUser.email,dataUser.password).then(async data=>{
         //on sauvegarde ce nouvel utilisateur dans firestore
         await firebase.firestore().collection(`users`).add({
-          id:data.user.uid,
+          uid:data.user.uid,
           nom:dataUser.nom,
           prenom:dataUser.prenom,
           sexe:dataUser.sexe,
@@ -249,7 +249,7 @@ export class AuthentificationService {
             if (querySnapshot.docs.length == 0) {
               //il existe un identifiant, normalement pas plus de 1
               firebase.firestore().collection('users').add({
-                  id:success.user.uid,
+                  uid:success.user.uid,
                   nom: success.additionalUserInfo.profile.last_name,
                   prenom: success.additionalUserInfo.profile.first_name,
                   sexe:null,
@@ -306,7 +306,7 @@ export class AuthentificationService {
     localUser.uid=infos.user.uid;
     localUser.connexionType=methodConnexion;
 
-      await firebase.firestore().collection('users').where('id', '==', infos.user.uid)
+      await firebase.firestore().collection('users').where('uid', '==', infos.user.uid)
           .get().then(function(querySnapshot) {
               //si l'utilisateur n'existe pas dans la base, on le crée
               if (querySnapshot.docs.length == 1) {
@@ -345,7 +345,7 @@ export class AuthentificationService {
     var lucalUser=this.localUser;
 
     //on met à jour dans firebase
-    await firebase.firestore().collection('users').where('id','==',this.localUser.uid).get()
+    await firebase.firestore().collection('users').where('uid','==',this.localUser.uid).get()
         .then(async function(querySnapshot) {
           //si l'utilisateur n'existe pas dans la base, on le crée
           if (querySnapshot.docs.length == 1) {
@@ -388,6 +388,9 @@ export class AuthentificationService {
           } else {
             //Web
             //TODO : notification de message pour le web
+            console.log("message notif");
+            console.log(msg);
+            alert(msg)
 
           }
         });

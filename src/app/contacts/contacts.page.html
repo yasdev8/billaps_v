@@ -4,13 +4,14 @@
 
     <!-- bouton de nouveau utilisateur-->
     <ion-buttons slot="end">
-      <ion-button id="notification-button">
-        <ion-icon *ngIf="contactsService.localUser.demandeContact?.length>0" name="person-add" slot="icon-only">
-          <ion-badge style="position: absolute" id="notifications-badge" color="danger">{{contactsService.localUser.demandeContact.length}}</ion-badge>
+      <ion-button id="notification-button" (click)="showDemande()">
+        <ion-icon *ngIf="user?.demandeContact?.length>0" name="person-add"
+                  slot="icon-only">
+          <ion-badge style="position: absolute" id="notifications-badge" color="danger">{{user?.demandeContact.length}}</ion-badge>
         </ion-icon>
       </ion-button>
 
-      <ion-button>
+      <ion-button *ngIf="segmentTab == 'contacts'">
         <div class="plusClass" slot="end">
           <ion-icon name="add" expand="icon-only" color="success" (click)="searchNewContact()"> </ion-icon>
         </div>
@@ -94,9 +95,9 @@
   <!-- Chat -->
 
   <!-- Contacts -->
-  <ion-list *ngIf="(segmentTab == 'contacts')&&(contactsService.localUser.contacts.length!=0)&&!newContact"
+  <ion-list *ngIf="(segmentTab == 'contacts')&&(user?.contacts.length!=0)&&!newContact&&!demandeContact"
             class="ion-padding" >
-    <ion-item *ngFor="let contact of contactsService.localUser.contacts" lines="none">
+    <ion-item *ngFor="let contact of user?.contacts" lines="none">
       <div *ngIf="contact.added=='ami'">
         <p>{{contact.identifiant}}</p>
       </div>
@@ -104,7 +105,7 @@
   </ion-list>
 
   <!-- New contact liste -->
-  <ion-list *ngIf="(segmentTab == 'contacts')&&newContact&&newContactData.length!=0&&(seeNewContact.length!=0)"
+  <ion-list *ngIf="(segmentTab == 'contacts')&&newContact&&newContactData.length!=0&&(seeNewContact.length!=0)&&!demandeContact"
             class="ion-padding">
     <ion-item *ngFor="let contact of newContactData" class="newContact">
       <p>{{contact.identifiant}}</p>
@@ -112,6 +113,19 @@
         <ion-badge *ngIf="contact.added==null" slot="end" (click)="ajouterContact(contact)">Ajouter</ion-badge>
         <ion-badge *ngIf="contact.added=='ami'" slot="end">Déjà ami</ion-badge>
         <ion-badge *ngIf="contact.added=='demande'" slot="end">Demande en cours</ion-badge>
+      </div>
+    </ion-item>
+  </ion-list>
+
+  <!-- liste des demande d'ajout -->
+  <ion-list *ngIf="(segmentTab == 'contacts')&&user?.demandeContact?.length>0&&demandeContact"
+            class="ion-padding">
+    <ion-item *ngFor="let contact of user?.demandeContact" class="newContact">
+      <p>{{contact.identifiant}}</p>
+      <div slot="end" class="lastSectionDemande">
+        <ion-badge slot="end" (click)="accepterDemande(contact)">Accepter</ion-badge>
+        <ion-badge slot="end" (click)="refuserDemande(contact)">Refuser</ion-badge>
+        <ion-badge slot="end" (click)="test(contact)">test</ion-badge>
       </div>
     </ion-item>
   </ion-list>

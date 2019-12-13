@@ -33,3 +33,6 @@
 
 //order-pipe
 //npm install ngx-order-pipe --save
+
+//firebase-admin
+//npm install firebase-admin --save

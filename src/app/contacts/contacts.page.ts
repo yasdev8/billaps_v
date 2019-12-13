@@ -16,6 +16,8 @@ export class ContactsPage implements OnInit {
   public seeNewContact:string='';
   public isToutContactCharge:boolean;
   public listeToutContacts:Array<any>=[];
+  public demandeContact:boolean=false;
+  public user:any=null;
 
   constructor(private route: Router,
               public contactsService:ContactsService) {
@@ -28,12 +30,16 @@ export class ContactsPage implements OnInit {
   }
 
   ionViewWillEnter(){
-    //on récupère la liste des contacts
-    this.contactsService.getListeContacts();
+    if(this.user==null) {
+      //on récupère la liste des contacts
+      this.contactsService.getListeContacts();
+      this.user=this.contactsService.localUser;
+    }
     //on initialise la variable de chargement de l'ensemble des utilisateurs
     this.isToutContactCharge=false;
 
-    console.log(this.contactsService.localUser.demandeContact.length)
+    //on réinitialise la page de demande
+    this.demandeContact=false;
   }
 
   //permet d'afficher le champ de recherche pour un nouveau contact
@@ -77,6 +83,60 @@ export class ContactsPage implements OnInit {
     contact.added='demande';
     //on lance l'ajout via le mail
     this.contactsService.ajouterContact(contact);
+  }
+
+  //permet d'afficher la liste des demandes
+  showDemande(){
+    this.demandeContact=true;
+    console.log(this.demandeContact)
+  }
+
+  //permet d'accepter une demande d'ami
+  async accepterDemande(contact){
+    var index:any;
+    for(var i=0; i<this.contactsService.localUser.demandeContact.length;i++){
+      if(contact.email==this.contactsService.localUser.demandeContact[i].email){
+        index=i;
+      }
+    }
+
+    console.log("async accepterDemande(contact){")
+    console.log(this.contactsService.authService.localUser)
+    console.log("index :")
+    console.log(index)
+
+    //on traite l'ajout dans les contacts ainsi que dans les contacts du demandeur
+    //Ajout dans ses propres contacts en le définissant comme ami
+    contact.added='ami';
+    await this.contactsService.ajouterContact(contact);
+    //ajout dans les contacts du demandeur
+    await this.contactsService.ajoutPourDemandeur(contact);
+    //on traite la suppression dans la liste de demande de contact
+    await this.contactsService.deleteDemande(index);
+  }
+
+  //permet de refuser une demande d'ami
+  refuserDemande(contact){
+
+  }
+
+  //permet de refuser une demande d'ami
+  test(contact){
+    var index:any;
+    for(var i=0; i<this.contactsService.localUser.demandeContact.length;i++){
+      if(contact.email==this.contactsService.localUser.demandeContact[i].email){
+        index=i;
+      }
+    }
+    console.log("async accepterDemande(contact){")
+    console.log(this.contactsService.authService.localUser)
+
+    console.log(this.contactsService.localUser.demandeContact.length)
+    console.log(this.contactsService.localUser.demandeContact)
+
+    console.log("index :")
+    console.log(index)
+
   }
 
 

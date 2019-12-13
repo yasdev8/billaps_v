@@ -6,6 +6,7 @@ import {AlertController, PopoverController} from '@ionic/angular';
 import {PopoverFacturesComponent} from '../_components/popover-factures/popover-factures.component';
 import {FacturesArbreYear} from '../_model/facturesArbre';
 import {HttpClient} from '@angular/common/http';
+import {Storage} from '@ionic/storage';
 
 @Component({
   selector: 'app-factures',

@@ -10,6 +10,8 @@ import {Router} from '@angular/router';
 import {forEach} from '@angular-devkit/schematics';
 import {OrderPipe} from 'ngx-order-pipe';
 import {test} from '@angular-devkit/core/src/virtual-fs/host';
+import {AuthentificationService} from './authentification.service';
+import * as firebase from 'firebase/app';
 
 @Injectable({
   providedIn: 'root'
@@ -31,6 +33,8 @@ export class FacturesService {
   public filterAffichage:string;
   //ordre de l'affichage
   public orderAffichage:string;
+  //date de mise à jour des factures
+  public facturesDate:Date;
 
 
   constructor(
@@ -42,37 +46,135 @@ export class FacturesService {
       public afSG: AngularFireStorage,
       public alertController: AlertController,
       private platform:Platform,
-      private orderPipe:OrderPipe
+      private orderPipe:OrderPipe,
+      public authService:AuthentificationService
       ) { }
 
   //on récupère la liste des factures stockées en bdd appli (lancé à l'ouverture)
-  async getFactures(){
+  async getFactures() {
     //on récupère le type d'affichage
-    await this.storage.get("billaps:typeAffichage").then(data=>{
-      this.typeAffichage=(data!=null?data:'liste');
-      if(data==null){
-        this.storage.set("billaps:typeAffichage",this.typeAffichage);
+    await this.storage.get("billaps:typeAffichage").then(data => {
+      this.typeAffichage = (data != null ? data : 'liste');
+      if (data == null) {
+        this.storage.set("billaps:typeAffichage", this.typeAffichage);
       }
     });
 
     //on récupère le filtre d'affichage
-    await this.storage.get("billaps:filterAffichage").then(data=>{
-      this.filterAffichage=(data!=null?data:'dateAjout');
-      if(data==null){
-        this.storage.set("billaps:filterAffichage",this.filterAffichage);
+    await this.storage.get("billaps:filterAffichage").then(data => {
+      this.filterAffichage = (data != null ? data : 'dateAjout');
+      if (data == null) {
+        this.storage.set("billaps:filterAffichage", this.filterAffichage);
       }
     });
 
     //on récupère l'ordre d'affichage
-    await this.storage.get("billaps:orderAffichage").then(data=>{
-      this.orderAffichage=(data!=null?data:'desc');
-      if(data==null){
-        this.storage.set("billaps:orderAffichage",this.orderAffichage);
+    await this.storage.get("billaps:orderAffichage").then(data => {
+      this.orderAffichage = (data != null ? data : 'desc');
+      if (data == null) {
+        this.storage.set("billaps:orderAffichage", this.orderAffichage);
       }
     });
 
+    // on regarde si la date de mise à jour des factures est en accord avec firebase
+    await this.storage.get("billaps:factures:date:" + this.authService.localUser.uid).then(data => {
+      this.facturesDate = data;
+    });
+    // on regarde la date dans firebase
+    var dateFirebase;
+    await firebase.firestore().collection('factures')
+        .where('uid', '==', this.authService.localUser.uid)
+        .get().then(async function(querySnapshot) {
+      //on récupère la date
+      if (querySnapshot.docs.length == 1) {
+        dateFirebase = await querySnapshot.docs[0].data().lastDate.toDate();
+      }
+    })
+        .catch(function(error) {
+          console.log("Error get date facture firebase : ", error);
+        });
+
+    //on compare les dates
+    if (this.facturesDate != dateFirebase) {
+      //si nous avons des dates différentes, on traite
+
+
+      // Gestion des factures depuis Firebase
+      var uid = this.authService.localUser.uid;
+      var lastDate = new Date();
+      var store = this.storage;
+      var facturesDate;
+      var tempFactures=[];
+      // on récupère les valeurs
+      await this.storage.get("billaps:factures:" + uid).then(async data => {
+        tempFactures = await (data != null ? data : []);
+      });
+      await this.storage.get("billaps:factures:date:" + uid).then(async data => {
+        facturesDate = await data;
+      });
+
+      tempFactures=await this.changeBlobFirestore(tempFactures);
+      //on récupère la liste des factures depuis le cloud
+      firebase.firestore().collection('factures')
+          .where('uid', '==', uid)
+          .get().then(async function(querySnapshot) {
+        //si l'utilisateur n'existe pas dans la base, on le crée
+        if (querySnapshot.docs.length == 0) {
+          //on regarde si des factures sont présent sur le téléphone
+
+
+          //il existe un identifiant, normalement pas plus de 1
+          firebase.firestore().collection('factures').add({
+            uid: uid,
+            lastDate: lastDate,
+            factures: tempFactures
+          });
+          // et on oublie pas de mettre a jour la date dans le téléphone
+          facturesDate = lastDate;
+          await store.set("billaps:factures:date:" + uid, lastDate);
+
+        } else if (querySnapshot.docs.length == 1) {
+          // on regarde la date de mise à jour depuis le cloud ou le telephone
+          var dateFactTel:Date;
+          await store.get("billaps:factures:date:" + uid).then(async data => {
+            dateFactTel = await data;
+          });
+          // on compare les date
+          if ((dateFactTel == null) || (dateFactTel.getTime() < querySnapshot.docs[0].data().lastDate.toDate().getTime())) {
+            //s'il n'y a pas de date dans le téléphone ou si les factures dans le cloud sont plus récentes
+            await store.set("billaps:factures:date:" + uid, querySnapshot.docs[0].data().lastDate.toDate());
+            await store.set("billaps:factures:" + uid, querySnapshot.docs[0].data().factures);
+
+          } else if (dateFactTel.getTime() > querySnapshot.docs[0].data().lastDate.toDate().getTime()) {
+            // si les factures dans le téléphone sont plus récentes
+            var ttFactures;
+            //on récupère les factures dans le téléphones
+            await store.get("billaps:factures:" + uid).then(async data => {
+              ttFactures = await (data != null ? data : []);
+            });
+            //on met à jour dans firebase
+            firebase.firestore().collection('factures').doc(querySnapshot.docs[0].id).update({
+              lastDate: dateFactTel,
+              //TODO remettre les factures une fois corrigé
+              //factures: ttFactures
+            });
+
+          } else if (dateFactTel.getTime() == querySnapshot.docs[0].data().lastDate.toDate().getTime()) {
+            // si nous avons les memes dates donc les meme factures
+            // Il n'y a rien à faire
+          }
+        }
+      })
+          .catch(function(error) {
+            console.log("Error update factures firebase : ", error);
+          });
+
+      //on n'oubli pas de mettre a jour facturesDate car dans la boucle firebase, on a utilisé une variable
+      this.facturesDate=facturesDate;
+    }
+
     // on récupère les factures ou on initialise les factures
-    return this.storage.get("billaps:factures").then(async data=>{
+    return this.storage.get("billaps:factures:"+this.authService.localUser.uid).then(async data=>{
       this.factures=(data!=null?data:[]);
 
       //on construit l'arbre des données si l'affichage est en arbre
@@ -120,6 +222,7 @@ export class FacturesService {
       }
     }
 
+    var dateUpdate = new Date();
     //on crée l'id de la facture
     await Promise.all([this.storage.get("billaps:maxIdFacture").then(async data=>{
       //cas ou pas de maxId donc pas de facture
@@ -143,8 +246,45 @@ export class FacturesService {
       //on ordonne les factures
       await this.orderFactures();
 
-      this.storage.set("billaps:factures",this.factures);
+      this.storage.set("billaps:factures:"+this.authService.localUser.uid,this.factures);
+
+      // on met à jour la date d'update des factures
+      await this.storage.set("billaps:factures:date:" + this.authService.localUser.uid,dateUpdate);
     })]);
+
+
+    //on met à jour la liste des factures
+    var tempFactures;
+    await this.storage.get("billaps:factures:" + this.authService.localUser.uid).then(async data => {
+      tempFactures = await data;
+    });
+    //on les vide des blob et photo
+    tempFactures=await this.changeBlobFirestore(tempFactures);
+
+    //on regarde si les factures existe
+    var uid= await this.authService.localUser.uid;
+    firebase.firestore().collection('factures').where('uid','==',uid)
+        .get().then(async function(querySnapshot) {
+      //on récupère la liste des factures
+      if (querySnapshot.docs.length == 1) {
+        //on met à jour la liste
+        firebase.firestore().collection('factures').doc(querySnapshot.docs[0].id).update({
+          factures:tempFactures,
+          lastDate:dateUpdate
+        });
+      } else if (querySnapshot.docs.length == 0) {
+        //on ajoute la première facture
+        firebase.firestore().collection('factures').add({
+          uid: uid,
+          lastDate: dateUpdate,
+          factures: tempFactures
+        });
+      }
+    })
+        .catch(function(error) {
+          console.log("Error add new factures : ", error);
+        });
+
 
     //l'enregistrement est terminé, on retourne à la page facture
     this.router.navigateByUrl('factures');
@@ -193,7 +333,7 @@ export class FacturesService {
   public updateFactures(factures: Array<Facture>) {
     this.factures=factures;
     try {
-      this.storage.set("billaps:factures", this.factures);
+      this.storage.set("billaps:factures:"+this.authService.localUser.uid, this.factures);
     } catch (e) {
       console.log(e);
     }
@@ -227,7 +367,7 @@ export class FacturesService {
 
     // on sauvegarde en base la liste des factures
     try {
-      const test = await Promise.all([this.storage.set("billaps:factures", this.factures).then(data=>{
+      const test = await Promise.all([this.storage.set("billaps:factures:"+this.authService.localUser.uid, this.factures).then(data=>{
         return "ok"
       },err=>{
         console.log(err);
@@ -236,6 +376,25 @@ export class FacturesService {
     } catch (e) {
       console.log(e);
     }
+
+    //on met à jour dans firebase
+    var tempFactures=await this.changeBlobFirestore(this.factures);
+    var uid= await this.authService.localUser.uid;
+    var dateModif=await facture.dateModif;
+    firebase.firestore().collection('factures').where('uid','==',uid)
+        .get().then(async function(querySnapshot) {
+      //on récupère la liste des factures
+      if (querySnapshot.docs.length == 1) {
+        //on met à jour la liste
+        firebase.firestore().collection('factures').doc(querySnapshot.docs[0].id).update({
+          factures:tempFactures,
+          lastDate:dateModif
+        });
+      }
+    })
+        .catch(function(error) {
+          console.log("Error add new factures : ", error);
+        });
   }
 
   deleteFacture(facture: Facture) {
@@ -348,5 +507,18 @@ export class FacturesService {
 
     //maintenant que nous avons les données, on ordonne les données :
     await this.orderFactures();
+  }
+
+  // cette fonction permet de modifier les blob pour les mettre au format firestore
+  async changeBlobFirestore(factures:Array<any>){
+    var finalFactures;
+    for( var i=0;i<factures.length;i++) {
+      //on ne sauvegarde pas le pdf en blob, il sera retrouvé avec le nom du fichier et le fichier lui-même
+      factures[i].pdfBlob = null;
+      factures[i].photos = null;
+    }
+
+    finalFactures=factures;
+    return finalFactures
   }
 }

@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import {AlertController, LoadingController, NavController, Platform} from '@ionic/angular';
 import {Facture} from "../_model/facture";
 import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
-import {FacturesService} from "../_services/factures.service";
+import {FacturesService} from '../_services/factures.service';
 import {Camera, CameraOptions} from "@ionic-native/camera/ngx";
 import {Router} from "@angular/router";
 import {File} from "@ionic-native/file/ngx";
@@ -12,6 +12,7 @@ import {scan} from "rxjs/operators";
 //import {DocumentScannerOptions} from "@ionic-native/document-scanner";
 import {AngularFireStorage} from "@angular/fire/storage";
 import {constantes} from '../_model/_constantes';
+import * as firebase from 'firebase/app';
 //import de toutes les fonctions de PDFmake
 import * as pdfMake from 'pdfmake/build/pdfmake.js';
 import * as pdfFonts from 'pdfmake/build/vfs_fonts.js';
@@ -48,6 +49,7 @@ export class FactureNewPage implements OnInit {
   width=null;
   height=null;
   img= new Image();
+  factChange:boolean;
 
   public pdf=null;
 
@@ -91,6 +93,8 @@ export class FactureNewPage implements OnInit {
       this.newFacture=this.facturesService.currentFacture;
     }
 
+    //on initialise la variable qui vérifie si on a changer la facture
+      this.factChange=false
   }
 
   /*
@@ -131,6 +135,8 @@ export class FactureNewPage implements OnInit {
               await this.getPicsFacture(images);
           }
       } else {
+          //depuis le web, on a de suite changer la facture
+          this.factChange=true;
           // on est sur le web --> Al Bundy
           var today = new Date();
           var dateNow = today.getDate()+'-'+(today.getMonth()+1)+'-'+today.getFullYear()+'_'+today.getHours()+today.getMinutes()+today.getSeconds();
@@ -230,6 +236,10 @@ export class FactureNewPage implements OnInit {
             this.pdf = pdfMake.createPdf(docDefinition);
 
             await this.pdf.getBuffer( async (buffer) =>{
+
+                //TODO voici 2 méthodes de construction de blob, naturel et firebase, on laisse firebase pour le moment
+                //la méthode firebase ne fonctionne pas donc on ne sauvegarde pas le blob, juste dans le téléphone
+                //var blob = await firebase.firestore.Blob.fromUint8Array(buffer);
                 var utf8 = new Uint8Array(buffer);
                 var binaryArray = utf8.buffer;
                 var blob = new Blob([binaryArray],{ type: 'application/pdf'});
@@ -248,6 +258,7 @@ export class FactureNewPage implements OnInit {
                 view[i] = binary.charCodeAt(i);
             }
 
+
             // create the blob object with content-type "application/pdf"
             var blob = new Blob( [view], { type: "application/pdf" });
             this.newFacture.pdfBlob = blob;
@@ -263,6 +274,9 @@ export class FactureNewPage implements OnInit {
 
   async getPicsFacture(option: CameraOptions) {
     await this.camera.getPicture(option).then(data=>{
+        //la facture a changé du coup
+        this.factChange=true;
+
       let base64Image = 'data:image/jpeg;base64,' +data;
 
       //on met à jour l'image
@@ -304,8 +318,10 @@ export class FactureNewPage implements OnInit {
   //cette fonction permet de créer ou de modifier une facture
   async createFacture(newFacture:Facture) {
 
-    // on génère le pdf en fonction de l'image
-    await this.generatePdf();
+    // on génère le pdf en fonction de l'image si on l'a changé
+    if(this.factChange) {
+        await this.generatePdf();
+    }
 
     //nouvelle facture
     if(this.newFacture.idApp==null) {
@@ -316,7 +332,9 @@ export class FactureNewPage implements OnInit {
         this.newFacture.dateFacture = new Date(newFacture.dateFacture);
         this.newFacture.prixHT = newFacture.prixHT;
         this.newFacture.prixTTC = newFacture.prixTTC;
-        this.newFacture.dateAjout = new Date();
+        var newDate=new Date();
+        this.newFacture.dateAjout = newDate;
+        this.newFacture.dateModif=newDate;
 
         // on sauvegarde la facture
         const result = await Promise.all([this.facturesService.createNewFacture(this.newFacture,this.pdf)]);
@@ -327,10 +345,15 @@ export class FactureNewPage implements OnInit {
         console.log(e);
       }
     } else {
+        //TODO : il faut vérifier que les factures n'ont pas été modifiés depuis un autre device web, comparer les date factures
+        //penser a le faire quand la version web arrivera car pour le moment, si vous vous connecter à un deuxième mobile, pas traité mais pervers
+
+
       //modification de facture
       /*toutes les données dans le FormGroup sont les données modifiées
       ATTENTION : pour les données REQUIRED du form, il ne renvoit pas null mais VIDE
       */
+      var dateModif = new Date();
       this.newFacture.title=(newFacture.title==null||newFacture.title=='')?this.newFacture.title:newFacture.title;
       this.newFacture.emetteur=(newFacture.emetteur==null||newFacture.emetteur=='')?
           this.newFacture.emetteur:newFacture.emetteur;
@@ -339,7 +362,8 @@ export class FactureNewPage implements OnInit {
           this.newFacture.dateFacture:(new Date(newFacture.dateFacture));
       this.newFacture.prixHT=(newFacture.prixHT==null)?this.newFacture.prixHT:newFacture.prixHT;
       this.newFacture.prixTTC=(newFacture.prixTTC==null)?this.newFacture.prixTTC:newFacture.prixTTC;
-      this.newFacture.dateModif = new Date();
+      this.newFacture.dateModif = dateModif;
+      console.log("ok")
       // on sauvegarde la facture modiffiée
       const result = await Promise.all([this.facturesService.updateOneFacture(this.newFacture)]);
       //on reset le formulaire

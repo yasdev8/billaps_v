@@ -33,7 +33,10 @@ export class ContactsService {
   }
 
   //on récupère la liste des contacts
-  getListeContacts() {
+  async getListeContacts() {
+      if(this.authService.localUser.uid==null){
+          await this.authService.getLocalUser();
+      }
       this.localUser=this.authService.localUser;
   }
 
@@ -61,6 +64,8 @@ export class ContactsService {
 
   //permet d'ajouter un contact
   async ajouterContact(contact){
+      console.log("async ajouterContact(contact){")
+      console.log(this.authService.localUser)
       var newContact:any;
 
         await firebase.firestore().collection('users')
@@ -83,10 +88,10 @@ export class ContactsService {
             });
 
         //on l'ajoute en local
-      this.localUser.contacts.push(newContact);
+      await this.localUser.contacts.push(newContact);
 
       // on l'ajoute dans l'objet dans les différente base
-      this.ajoutContactBase(newContact);
+      await this.ajoutContactBase(newContact);
   }
 
   //permet de mettre à jour toute les base de l'ajout d'un nouveau contact
@@ -98,20 +103,25 @@ export class ContactsService {
 
       //on met à jour dans le local storage
       await this.storage.set("billaps:user",this.authService.localUser);
+      console.log("await this.storage.set(\"billaps:user\",this.authService.localUser);")
+        console.log(this.authService.localUser)
 
       // on met à jour dans firestore() la demande d'ami
-        firebase.firestore().collection('users')
+        await firebase.firestore().collection('users')
             .where('email','==',this.authService.localUser.email)
             .get()
             .then(async function(querySnapshot) {
                 //on récupère l'utilisateur et on l'ajoute à la liste d'amis
                 if(querySnapshot.docs.length==1){
                     //on met à jour la liste des contacts
-                    firebase.firestore().collection('users').doc(querySnapshot.docs[0].id)
+                    await firebase.firestore().collection('users').doc(querySnapshot.docs[0].id)
                         .update({
                             contacts:contacts
                         });
 
+
+
+                    // on met à jour pour la demande d'ami
                     var demandeListe=[];
                     //on renseigne les données de l'utilisateur
                     var userData=querySnapshot.docs[0].data();
@@ -119,17 +129,17 @@ export class ContactsService {
                     userData.contacts=null;
                     userData.demandeContact=null;
                     //on met à jour dans firestore pour l'ami pour dire qu'il a une demande
-                    firebase.firestore().collection('users')
+                    await firebase.firestore().collection('users')
                         .where('email','==',newContact.email)
                         .get()
                         .then(async function(querySnapshot) {
                             //on récupère l'utilisateur et on lui spécifie qu'il a une demande
                             if(querySnapshot.docs.length==1){
                                 //on met à jour la liste des contacts
-                                querySnapshot.docs[0].data().demandeContact!=null?demandeListe=querySnapshot.docs[0].data().demandeContact:demandeListe=[];
+                                await querySnapshot.docs[0].data().demandeContact!=null?demandeListe=querySnapshot.docs[0].data().demandeContact:demandeListe=[];
                                 //on ajoute à la liste de demande la demande que l'on vient de faire
                                 demandeListe.unshift(userData);
-                                firebase.firestore().collection('users').doc(querySnapshot.docs[0].id)
+                                await firebase.firestore().collection('users').doc(querySnapshot.docs[0].id)
                                     .update({
                                         demandeContact:demandeListe
                                     })
@@ -155,5 +165,68 @@ export class ContactsService {
 
 
         //TODO envoyer la notification au contact pour dire qu'il a une demande
+    }
+
+  // fonction permettant de modifier la demande en accepté pour le demandeur
+    async ajoutPourDemandeur(contact){
+      var localUser=this.authService.localUser;
+
+    // on modifie la demande en accepté dans la liste du demandeur
+        await firebase.firestore().collection('users')
+            .where('email','==',contact.email)
+            .get()
+            .then(async function(querySnapshot) {
+                //on récupère l'utilisateur et on lui spécifie qu'il a une demande
+                if(querySnapshot.docs.length==1){
+                    //on met à jour la demande en accepté
+                    var contacts=await querySnapshot.docs[0].data().contacts!=null?querySnapshot.docs[0].data().contacts:[];
+                    await contacts.forEach(function (con){
+                        //on recherche où l'on se trouve dans la liste d'ami du demandeur
+                        if(con.uid==localUser.uid){
+                            con.added='ami';
+                        }
+                    });
+
+                    //on met à jour la liste des contacts
+                    await firebase.firestore().collection('users').doc(querySnapshot.docs[0].id).update( {
+                        contacts:contacts
+                    })
+
+                    //TODO lancer la notification pour le demandeur que sa demande d'ami a été acceptée
+                } else {
+                    console.log("email non unique lors de la mise a jour suite à demande d'acceptation: "+querySnapshot.docs);
+                }
+            })
+            .catch(function(error) {
+                console.log("Error getting email to accept demand : ", error);
+            });
+
+  }
+
+    // supprimer le contact de la liste des demandes
+    deleteDemande(index){
+        // on les supprime dans les différente liste concernant l'utilisateur
+        console.log(this.localUser.demandeContact)
+        console.log(this.authService.localUser.demandeContact)
+        this.localUser.demandeContact.splice(index,1);
+        this.authService.localUser.demandeContact.splice(index,1);
+        console.log("************")
+        console.log(this.localUser.demandeContact)
+        console.log(this.authService.localUser.demandeContact)
+
+        var listeDem=this.authService.localUser.demandeContact;
+
+        firebase.firestore().collection('users')
+            .where('email','==',this.localUser.email).get().then(async function(querySnapshot) {
+            if(querySnapshot.docs.length==1){
+                //on met à jour la liste des contacts
+                firebase.firestore().collection('users').doc(querySnapshot.docs[0].id).update( {
+                    demandeContact:listeDem
+                })
+            } else {
+                console.log("email non unique lors de la mise a jour de la liste de demande: "+querySnapshot.docs);
+            }
+        })
+
     }
 }
