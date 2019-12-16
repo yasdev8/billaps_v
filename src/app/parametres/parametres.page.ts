@@ -23,7 +23,7 @@ export class ParametresPage implements OnInit {
   }
 
   //naviguer vers
-  private goTo(destination:string){
+  public goTo(destination:string){
     this.router.navigateByUrl(destination);
   }
 }

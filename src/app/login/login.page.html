@@ -17,10 +17,12 @@
   </form>
   -->
 
+  <!--empeche facebook pour le moment
   <ion-button shape="round" (click)="facebookLogin()" class="ion-padding">
     <ion-icon slot="start" name="logo-facebook"></ion-icon>
     Connexion avec Facebook
   </ion-button>
+  -->
 
   <br>
   <br>
@@ -34,6 +36,7 @@
     <ion-label>Password : </ion-label>
     <ion-input type="password" [(ngModel)]="dataUser.password"></ion-input>
   </ion-item>
+  <br>
   <ion-button expand="block" (click)="loginMail()">Connexion</ion-button>
   <br>
   <ion-button expand="block" (click)="InscriptionMail()" color="tertiary">Inscription</ion-button>

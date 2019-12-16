@@ -29,12 +29,12 @@ export class PopoverFacturesComponent implements OnInit {
     this.orderAffichage=this.facturesService.orderAffichage;
   }
 
-  private updateAffichage1(param:string){
+  public updateAffichage1(param:string){
     //on remplace le choix de l'arbre ou de la liste
     this.typeAffichage=param;
   }
 
-  private updateAffichage2(filter:string,order:string){
+  public updateAffichage2(filter:string,order:string){
     //on modifie pour le tri
     this.filterAffichage=filter;
     this.orderAffichage=order;

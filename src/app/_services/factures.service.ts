@@ -204,7 +204,6 @@ export class FacturesService {
             console.log("enregistr : "+newFacture.pdfPath);
         });
 
-        console.log("avant firebase");
       await this.uploadFirebasePdf(newFacture, pdf);
     } else {
       if (newFacture.photoType!='pdf'){
@@ -297,14 +296,12 @@ export class FacturesService {
 
     const imagePath = newFacture.photoTitle + '.pdf';
 
-    console.log("tout va bien");
     if(newFacture.photoType=='pdf'){
       //si c'était deja un pdf à la base, on a déja la data
       this.dataURL = newFacture.photos;
     } else {
       //Si c'était une photo, on récupère le dataUrl
       this.dataURL =  await this.GetDataUrl(pdf);
-      console.log("dataUrl ok");
     }
 
     await loading.present();

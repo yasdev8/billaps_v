@@ -28,6 +28,7 @@ import {HttpClientModule} from '@angular/common/http';
 import {EmailComposer} from '@ionic-native/email-composer/ngx';
 import {constantes} from './_model/_constantes';
 import {OrderModule} from 'ngx-order-pipe';
+import { HideHeaderDirective } from './_directives/hide-header.directive';
 
 
 //configuration de Firebase
@@ -46,7 +47,7 @@ export const firebaseConfig = {
 
 
 @NgModule({
-    declarations: [AppComponent],
+    declarations: [AppComponent, HideHeaderDirective],
     entryComponents: [],
     imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule,
         //import des module Firebase
@@ -82,6 +83,7 @@ export const firebaseConfig = {
         EmailComposer,
     ],
     exports: [
+        HideHeaderDirective
     ],
     bootstrap: [AppComponent]
 })

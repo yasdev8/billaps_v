@@ -27,7 +27,7 @@ export class FacturesPage implements OnInit {
 
   constructor(private router:Router,
               private alertCtrl:AlertController,
-              private facturesService:FacturesService,
+              public facturesService:FacturesService,
               public popoverController: PopoverController) {
 
     //l'accordéon est fermé à la création de la page
