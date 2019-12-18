@@ -56,8 +56,19 @@ export class FactureDetailPage implements OnInit {
     this.router.navigateByUrl('facture-new');
   }
 
-  openPDF(){
+  //on ouvre le PDF
+  async openPDF(){
     if(this.platform.is('cordova')){
+      //On vérifie que la facture est bien sur le téléphone et non seulement dans le cloud
+      if(this.facture.pdfPath==null){
+        //on doit créer la facture en local
+        let path = await this.facturesService.importPdfFactureFromFirebase(this.facture.photoTitle);
+        //on met à jour la facture dans la liste des factures ainsi que la path des facture dans le device
+        let index=await this.facturesService.factures.indexOf(this.facture);
+        this.facture.pdfPath=await path;
+        this.facturesService.factures[index].pdfPath=await path
+      }
+      //Permet d'ouvrir le pdf en utilisant le chemin de la facture sur le téléphone
       this.fileOpener.open(this.facture.pdfPath, 'application/pdf');
     } else {
       alert("le pdf s'affiche normalement ... ")

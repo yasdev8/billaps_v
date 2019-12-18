@@ -70,7 +70,7 @@ export class AuthentificationService {
   }
 
   async login(){
-    let res=this.loadToken();
+    let res=await this.loadToken();
     this.goAfterLogin(res);
   }
 
@@ -83,7 +83,7 @@ export class AuthentificationService {
   }
 
   //navigation si on est connecté
-  private goAfterLogin(value:boolean){
+  private goAfterLogin(value: boolean){
     //permet de colorer la bonne icone
     this.footService.pageCible='factures';
     //On crée l'instance de création des notification pour l'user (FCM)
@@ -98,19 +98,24 @@ export class AuthentificationService {
   }
 
   //sauvegarde du token de connexion
-  saveToken(token:string) {
-    localStorage.setItem("connected",token);
+  async saveToken(token:string) {
+    await this.storage.set("billaps:connected",token)
+    //localStorage.setItem("connected",token);
   }
 
   //chargement du token de connexion
-  loadToken() {
-    this.token=localStorage.getItem("connected");
-    if (this.token==null){
-      this.saveToken('disconnected');
-      this.token=localStorage.getItem("connected");
-    }
-    this.token=='connected'?this.authentificated=true:this.authentificated=false;
-    return this.authentificated;
+  async loadToken() {
+    await this.storage.get("billaps:connected").then(async data=>{
+
+      this.token=await data;
+      if (this.token==null){
+        await this.saveToken('disconnected');
+        this.token=await 'disconnected';
+      }
+      await this.token=='connected'?this.authentificated=true:this.authentificated=false;
+    });
+
+    return  this.authentificated;
   }
 
   //déconnexion de l'application
@@ -277,9 +282,10 @@ export class AuthentificationService {
 
     //Maintenant qu'on est authentifié auprès de firebase, on va alimenter les données dans l'application
     // on va créer l'utilisateur dans le storage avec toute ses informations
-    this.createUser(success,methodConnexion);
+    await this.createUser(success,methodConnexion);
+
     // on sauve le token
-    this.saveToken("connected");
+    await this.saveToken("connected");
     //on se log
     this.login();
 

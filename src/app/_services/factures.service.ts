@@ -12,6 +12,9 @@ import {OrderPipe} from 'ngx-order-pipe';
 import {test} from '@angular-devkit/core/src/virtual-fs/host';
 import {AuthentificationService} from './authentification.service';
 import * as firebase from 'firebase/app';
+import * as pdfMake from 'pdfmake/build/pdfmake.js';
+import * as pdfFonts from 'pdfmake/build/vfs_fonts.js';
+pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 @Injectable({
   providedIn: 'root'
@@ -53,33 +56,34 @@ export class FacturesService {
   //on récupère la liste des factures stockées en bdd appli (lancé à l'ouverture)
   async getFactures() {
     //on récupère le type d'affichage
-    await this.storage.get("billaps:typeAffichage").then(data => {
-      this.typeAffichage = (data != null ? data : 'liste');
+    await this.storage.get("billaps:typeAffichage").then(async data => {
+      this.typeAffichage = await (data != null ? data : 'liste');
       if (data == null) {
         this.storage.set("billaps:typeAffichage", this.typeAffichage);
       }
     });
 
     //on récupère le filtre d'affichage
-    await this.storage.get("billaps:filterAffichage").then(data => {
-      this.filterAffichage = (data != null ? data : 'dateAjout');
+    await this.storage.get("billaps:filterAffichage").then(async data => {
+      this.filterAffichage = await (data != null ? data : 'dateAjout');
       if (data == null) {
         this.storage.set("billaps:filterAffichage", this.filterAffichage);
       }
     });
 
     //on récupère l'ordre d'affichage
-    await this.storage.get("billaps:orderAffichage").then(data => {
-      this.orderAffichage = (data != null ? data : 'desc');
+    await this.storage.get("billaps:orderAffichage").then(async data => {
+      this.orderAffichage = await (data != null ? data : 'desc');
       if (data == null) {
         this.storage.set("billaps:orderAffichage", this.orderAffichage);
       }
     });
 
     // on regarde si la date de mise à jour des factures est en accord avec firebase
-    await this.storage.get("billaps:factures:date:" + this.authService.localUser.uid).then(data => {
-      this.facturesDate = data;
+    await this.storage.get("billaps:factures:date:" + this.authService.localUser.uid).then(async data => {
+      this.facturesDate = await data;
     });
+
     // on regarde la date dans firebase
     var dateFirebase;
     await firebase.firestore().collection('factures')
@@ -98,7 +102,6 @@ export class FacturesService {
     if (this.facturesDate != dateFirebase) {
       //si nous avons des dates différentes, on traite
 
-
       // Gestion des factures depuis Firebase
       var uid = this.authService.localUser.uid;
       var lastDate = new Date();
@@ -115,7 +118,7 @@ export class FacturesService {
 
       tempFactures=await this.changeBlobFirestore(tempFactures);
       //on récupère la liste des factures depuis le cloud
-      firebase.firestore().collection('factures')
+      await firebase.firestore().collection('factures')
           .where('uid', '==', uid)
           .get().then(async function(querySnapshot) {
         //si l'utilisateur n'existe pas dans la base, on le crée
@@ -134,6 +137,7 @@ export class FacturesService {
           await store.set("billaps:factures:date:" + uid, lastDate);
 
         } else if (querySnapshot.docs.length == 1) {
+
           // on regarde la date de mise à jour depuis le cloud ou le telephone
           var dateFactTel:Date;
           await store.get("billaps:factures:date:" + uid).then(async data => {
@@ -143,7 +147,16 @@ export class FacturesService {
           if ((dateFactTel == null) || (dateFactTel.getTime() < querySnapshot.docs[0].data().lastDate.toDate().getTime())) {
             //s'il n'y a pas de date dans le téléphone ou si les factures dans le cloud sont plus récentes
             await store.set("billaps:factures:date:" + uid, querySnapshot.docs[0].data().lastDate.toDate());
-            await store.set("billaps:factures:" + uid, querySnapshot.docs[0].data().factures);
+
+            //il faut transcrire les date de firestore pour qu'elles soit lisibles par ionic et le telephone
+            var facturesAdd =await querySnapshot.docs[0].data().factures;
+            for(var i=0;i<facturesAdd.length;i++){
+              facturesAdd[i].dateAjout=await facturesAdd[i].dateAjout.toDate();
+              facturesAdd[i].dateFacture=await facturesAdd[i].dateFacture.toDate();
+              facturesAdd[i].dateModif=await facturesAdd[i].dateModif.toDate();
+            }
+
+            await store.set("billaps:factures:" + uid, facturesAdd);
 
           } else if (dateFactTel.getTime() > querySnapshot.docs[0].data().lastDate.toDate().getTime()) {
             // si les factures dans le téléphone sont plus récentes
@@ -517,5 +530,31 @@ export class FacturesService {
 
     finalFactures=factures;
     return finalFactures
+  }
+
+  //import de la facture depuis Firebase pour la stocker dans le téléphone
+  async importPdfFactureFromFirebase(titleFacture:string){
+    var path:string;
+
+    //on charge la facture depuis firebase
+    await firebase.storage().ref(titleFacture+'.pdf').getDownloadURL().then( async data=>{
+      //on vient de récupérer l'URL de la facture
+
+      //on crée le blob avec un fetch, le paramètre no-cors permet d'éviter l'anomalie 'Access-Control-Allow-Origin'
+      let blob = await fetch(data, {mode: 'no-cors'}).then(r => r.blob());
+
+      //on ajoute le fichier dans le telephone
+      await this.file.writeFile(this.file.dataDirectory, titleFacture+'.pdf',blob,{replace: true})
+          .then(async fileEntry =>{
+            path=await this.file.dataDirectory+titleFacture+'.pdf';
+            console.log("enregistré : "+path);
+          });
+
+    })
+        .catch(function(error) {
+          console.log("Error getDownloadURL facture firebase : ", error);
+        });
+
+    return path;
   }
 }

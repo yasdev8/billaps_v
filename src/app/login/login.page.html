@@ -1,10 +1,10 @@
-<ion-header>
-  <ion-toolbar color="danger">
-    <ion-title>Authentification</ion-title>
-  </ion-toolbar>
-</ion-header>
+
 
 <ion-content>
+
+  <div class="logo">
+    <ion-img src="../../assets/icon/icone.png"></ion-img>
+  </div>
   <!--Précédente formule de connexion
   <form #f="ngForm" (ngSubmit)="onLogin(f.value)">
     <ion-item>
@@ -29,15 +29,17 @@
   <br>
 
   <ion-item>
-    <ion-label>Email : </ion-label>
-    <ion-input type="email" [(ngModel)]="dataUser.email"></ion-input>
+    <ion-label>Email &nbsp; &nbsp;&nbsp;&nbsp;&nbsp; : </ion-label>
+    <ion-input type="email" [(ngModel)]="dataUser.email" placeholder="Adresse mail"></ion-input>
   </ion-item>
   <ion-item>
     <ion-label>Password : </ion-label>
-    <ion-input type="password" [(ngModel)]="dataUser.password"></ion-input>
+    <ion-input type="password" [(ngModel)]="dataUser.password" placeholder="Mot de Passe"></ion-input>
   </ion-item>
   <br>
-  <ion-button expand="block" (click)="loginMail()">Connexion</ion-button>
-  <br>
-  <ion-button expand="block" (click)="InscriptionMail()" color="tertiary">Inscription</ion-button>
+  <div class="butt">
+    <ion-button expand="block" shape="round" (click)="loginMail()">Connexion</ion-button>
+    <br>
+    <ion-button expand="block" shape="round" (click)="InscriptionMail()" color="tertiary">Inscription</ion-button>
+  </div>
 </ion-content>

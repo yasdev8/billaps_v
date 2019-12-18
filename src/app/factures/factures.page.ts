@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import {Router} from "@angular/router";
 import {FacturesService} from "../_services/factures.service";
 import {Facture} from "../_model/facture";
-import {AlertController, PopoverController} from '@ionic/angular';
+import {AlertController, LoadingController, PopoverController} from '@ionic/angular';
 import {PopoverFacturesComponent} from '../_components/popover-factures/popover-factures.component';
 import {FacturesArbreYear} from '../_model/facturesArbre';
 import {HttpClient} from '@angular/common/http';
@@ -28,6 +28,7 @@ export class FacturesPage implements OnInit {
   constructor(private router:Router,
               private alertCtrl:AlertController,
               public facturesService:FacturesService,
+              public loadingController: LoadingController,
               public popoverController: PopoverController) {
 
     //l'accordéon est fermé à la création de la page
@@ -49,12 +50,21 @@ export class FacturesPage implements OnInit {
   }
 
   async onGetFactures() {
-    //on charge les données de factures
-    await this.facturesService.getFactures().then(data=>{
-      this.factures=data;
-      //on récupère l'arbre du service
-      this.facturesArbre=this.facturesService.facturesArbre;
+    //on met un loader
+    const loading = await this.loadingController.create({
+      //spinner: null,
+      message: 'Chargement',
+      translucent: true,
     });
+    loading.present();
+    //on charge les données de factures
+    await this.facturesService.getFactures().then(async data=>{
+      this.factures=await data;
+      //on récupère l'arbre du service
+      this.facturesArbre=await this.facturesService.facturesArbre;
+    });
+
+    loading.dismiss();
   }
 
   onNewFacture() {
