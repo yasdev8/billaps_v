@@ -13,9 +13,9 @@ export class NewItemPage implements OnInit {
   new_item_form: FormGroup;
 
   constructor(
-    private router: Router,
-    public formBuilder: FormBuilder,
-    private itemService: ItemService
+      private router: Router,
+      public formBuilder: FormBuilder,
+      private itemService: ItemService
   ) { }
 
   ngOnInit() {

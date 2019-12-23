@@ -5,6 +5,7 @@ import { Injectable } from '@angular/core';
 })
 export class FootNavService {
   public pageCible:string='factures';
+  public ttocr:any;
   constructor() { }
 
 }

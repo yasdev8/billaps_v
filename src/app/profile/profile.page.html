@@ -25,21 +25,31 @@
     </div>
   </div>
 
-  <div class="flex">
-    <div class="border-blue">
-      <div class="border-img">
-        <div class="img-box">
-          <img *ngIf="authService.localUser.photo!=null" src="authService.localUser.photo">
-          <img *ngIf="((authService.localUser.photo==null)&&(authService.localUser.photoURL!=null))"
-               [src]="authService.localUser.photoURL + '?type=large'">
-          <img *ngIf="((authService.localUser.photo==null)&&(authService.localUser.photoURL==null)
-          &&(authService.localUser.sexe=='M'))" src="../../assets/img/male-profile-default.png">
-          <img *ngIf="((authService.localUser.photo==null)&&(authService.localUser.photoURL==null)
-          &&(authService.localUser.sexe=='F'))" src="../../assets/img/female-profile-default.png">
+  <div>
+    <div class="flex">
+      <div class="border-blue">
+        <div class="border-img">
+          <div class="img-box">
+            <img *ngIf="authService.localUser.photo!=null" src="authService.localUser.photo">
+            <img *ngIf="((authService.localUser.photo==null)&&(authService.localUser.photoURL!=null))"
+                 [src]="authService.localUser.photoURL + '?type=large'">
+            <img *ngIf="((authService.localUser.photo==null)&&(authService.localUser.photoURL==null)
+            &&(authService.localUser.sexe=='M'))" src="../../assets/img/male-profile-default.png">
+            <img *ngIf="((authService.localUser.photo==null)&&(authService.localUser.photoURL==null)
+            &&(authService.localUser.sexe=='F'))" src="../../assets/img/female-profile-default.png">
+          </div>
         </div>
       </div>
     </div>
+
+    <div  class="flex-modify-pic" *ngIf="modeEdit">
+      <div>
+        <ion-icon name="add-circle-outline" size="large" (click)="changePic()"></ion-icon>
+      </div>
+    </div>
   </div>
+
+
 
   <ion-toolbar *ngIf="!modeEdit" class="flex">
     <ion-buttons slot="end">
@@ -111,6 +121,7 @@
   <br>
 
   <ion-button *ngIf="modeEdit" class="submit-btn" expand="block" (click)="update()">Update</ion-button>
+  <ion-button class="submit-btn" expand="block" (click)="presentToastWithOptions()">presentToastWithOptions</ion-button>
 
 </ion-content>
 

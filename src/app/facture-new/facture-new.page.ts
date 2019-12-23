@@ -71,7 +71,7 @@ export class FactureNewPage implements OnInit {
               public afSG: AngularFireStorage,
               //Driss
               private facturesService:FacturesService,
-              //private documentScanner:DocumentScanner,
+              //public documentScanner:DocumentScanner,
               private platform:Platform,
               private camera:Camera) {
   }
@@ -142,12 +142,14 @@ export class FactureNewPage implements OnInit {
           var dateNow = today.getDate()+'-'+(today.getMonth()+1)+'-'+today.getFullYear()+'_'+today.getHours()+today.getMinutes()+today.getSeconds();
           if (option=='photo'||option=='image') {
               //Al Bundy
-              this.newFacture.photos = this.constantes.imageBase64Land;
+              this.newFacture.photos = this.constantes.imageBase64facture;
               this.newFacture.photoType = 'jpeg';
               this.newFacture.photoTitle=option+'_facture_ordinateur_boulanger_'+dateNow;
 
               // On récupère les valeurs de l'image pour la taille ultérieurement
               this.img.src = this.newFacture.photos;
+
+              //this.ocr();
 
           } else if (option=='pdf') {
               //pdf
@@ -298,10 +300,10 @@ export class FactureNewPage implements OnInit {
     })
   }
 
+  /*
   //prise de photo avec document scanner
   //TODO: A MODIFIER POUR TESTER LE SCAN
-    /*
-  takeScan(option){
+  takeScan(){
     let opts:DocumentScannerOptions={
       sourceType : 1,
       fileName : "myfile",
@@ -309,9 +311,27 @@ export class FactureNewPage implements OnInit {
       returnBase64 : true
     };
     this.documentScanner.scanDoc(opts).then(data=>{
-      console.log(data);
+        //la facture a changé du coup
+        this.factChange=true;
+
+        let base64Image = 'data:image/jpeg;base64,' +data;
+
+        //on met à jour l'image
+        this.img.src=base64Image;
+
+        //on affecte dans la variable photo de l'image photographiée
+        this.newFacture.photos=base64Image;
+        //on définit le type de la photo
+        this.newFacture.photoType='jpeg';
+
+        // on récupère la date du jour
+        var today = new Date();
+        var dateNow = today.getDate()+'-'+(today.getMonth()+1)+'-'+today.getFullYear()+'_'+today.getHours()+today.getMinutes()+today.getSeconds();
+
+
+        this.newFacture.photoTitle==null?this.newFacture.photoTitle='facture_'+dateNow:this.newFacture.photoTitle=this.newFacture.photoTitle;
     },err=>{
-      console.log(err);
+        console.log(err);
     })
   }*/
 
@@ -335,6 +355,7 @@ export class FactureNewPage implements OnInit {
         var newDate=new Date();
         this.newFacture.dateAjout = newDate;
         this.newFacture.dateModif=newDate;
+        this.newFacture.pdfPath=null;
 
         // on sauvegarde la facture
         const result = await Promise.all([this.facturesService.createNewFacture(this.newFacture,this.pdf)]);

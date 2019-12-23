@@ -36,3 +36,19 @@
 
 //firebase-admin
 //npm install firebase-admin --save
+
+//Document Scanner
+//ionic cordova plugin add cordova-plugin-document-scanner
+//npm install @ionic-native/document-scanner
+
+//photo-viewer
+//ionic cordova plugin add com-sarriaroman-photoviewer
+//npm install @ionic-native/photo-viewer
+
+//document-viewer
+//ionic cordova plugin add cordova-plugin-document-viewer
+//npm install @ionic-native/document-viewer
+
+//OCR ionic
+//ionic cordova plugin add cordova-plugin-mobile-ocr
+//npm install @ionic-native/ocr

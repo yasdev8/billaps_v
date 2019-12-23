@@ -53,6 +53,10 @@ export class FacturesService {
       public authService:AuthentificationService
       ) { }
 
+
+
+  //async isDateDifferent
+
   //on récupère la liste des factures stockées en bdd appli (lancé à l'ouverture)
   async getFactures() {
     //on récupère le type d'affichage
@@ -97,7 +101,6 @@ export class FacturesService {
         .catch(function(error) {
           console.log("Error get date facture firebase : ", error);
         });
-
     //on compare les dates
     if (this.facturesDate != dateFirebase) {
       //si nous avons des dates différentes, on traite
@@ -125,7 +128,6 @@ export class FacturesService {
         if (querySnapshot.docs.length == 0) {
           //on regarde si des factures sont présent sur le téléphone
 
-
           //il existe un identifiant, normalement pas plus de 1
           firebase.firestore().collection('factures').add({
             uid: uid,
@@ -135,16 +137,19 @@ export class FacturesService {
           // et on oublie pas de mettre a jour la date dans le téléphone
           facturesDate = lastDate;
           await store.set("billaps:factures:date:" + uid, lastDate);
+          console.log("date mise a jour")
 
         } else if (querySnapshot.docs.length == 1) {
 
+
           // on regarde la date de mise à jour depuis le cloud ou le telephone
           var dateFactTel:Date;
-          await store.get("billaps:factures:date:" + uid).then(async data => {
-            dateFactTel = await data;
-          });
+          //juste pour utiliser une nouvelle variable locale au sein de firebase
+          dateFactTel=facturesDate;
+
           // on compare les date
           if ((dateFactTel == null) || (dateFactTel.getTime() < querySnapshot.docs[0].data().lastDate.toDate().getTime())) {
+
             //s'il n'y a pas de date dans le téléphone ou si les factures dans le cloud sont plus récentes
             await store.set("billaps:factures:date:" + uid, querySnapshot.docs[0].data().lastDate.toDate());
 
@@ -270,8 +275,8 @@ export class FacturesService {
     await this.storage.get("billaps:factures:" + this.authService.localUser.uid).then(async data => {
       tempFactures = await data;
     });
-    //on les vide des blob et photo
-    tempFactures=await this.changeBlobFirestore(tempFactures);
+
+    tempFactures= await this.changeBlobFirestore(tempFactures)
 
     //on regarde si les factures existe
     var uid= await this.authService.localUser.uid;
@@ -279,12 +284,41 @@ export class FacturesService {
         .get().then(async function(querySnapshot) {
       //on récupère la liste des factures
       if (querySnapshot.docs.length == 1) {
+        //on met à jour dans firebase
+        var factu:Array<any>=querySnapshot.docs[0].data().factures;
+        //on crée une nouvelle facture en fonction d'une deja présente
+        //on fait ca car je n'ai aps trouvé autrement, en reprenant la facture direction, erreur firebase
+        var newFactu = querySnapshot.docs[0].data().factures[0];
+        newFactu.dateAjout=newFacture.dateAjout;
+        newFactu.dateFacture=newFacture.dateFacture;
+        newFactu.dateModif=newFacture.dateModif;
+        newFactu.emetteur=newFacture.emetteur;
+        newFactu.idApp=newFacture.idApp;
+        newFactu.pdfBlob=null;
+        newFactu.pdfPath=newFacture.pdfPath;
+        newFactu.photoTitle=newFacture.photoTitle;
+        newFactu.photoType=newFacture.photoType;
+        newFactu.photos=null;
+        newFactu.prixHT=newFacture.prixHT;
+        newFactu.prixTTC=newFacture.prixTTC;
+        newFactu.title=newFacture.title;
+
+        //pour chaque facture, on reprend les date et non les timestamp
+        factu.forEach(function (value){
+          value.dateAjout=value.dateAjout.toDate();
+          value.dateFacture=value.dateFacture.toDate();
+          value.dateModif=value.dateModif.toDate();
+        });
+        //on ajoute la nouvelle facture a la liste firebase
+        await factu.unshift(newFactu);
         //on met à jour la liste
         firebase.firestore().collection('factures').doc(querySnapshot.docs[0].id).update({
-          factures:tempFactures,
+          factures:factu,
           lastDate:dateUpdate
         });
       } else if (querySnapshot.docs.length == 0) {
+
+        console.log(tempFactures)
         //on ajoute la première facture
         firebase.firestore().collection('factures').add({
           uid: uid,

@@ -10,8 +10,9 @@ import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { IonicStorageModule } from "@ionic/storage";
 import { Camera } from "@ionic-native/camera/ngx";
-//import { PhotoViewer } from "@ionic-native/photo-viewer/ngx";
-//import { DocumentScanner } from "@ionic-native/document-scanner/ngx";
+import { PhotoViewer } from "@ionic-native/photo-viewer/ngx";
+import { DocumentScanner } from "@ionic-native/document-scanner/ngx";
+import { DocumentViewer } from '@ionic-native/document-viewer/ngx';
 
 import { AngularFireModule } from '@angular/fire';
 import { AngularFirestoreModule } from '@angular/fire/firestore'
@@ -29,6 +30,7 @@ import {EmailComposer} from '@ionic-native/email-composer/ngx';
 import {constantes} from './_model/_constantes';
 import {OrderModule} from 'ngx-order-pipe';
 import { HideHeaderDirective } from './_directives/hide-header.directive';
+import {OCR} from '@ionic-native/ocr/ngx';
 
 
 //configuration de Firebase
@@ -72,9 +74,11 @@ export const firebaseConfig = {
         StatusBar,
         SplashScreen,
         Facebook,
-        //PhotoViewer,
-        //DocumentScanner,
+        PhotoViewer,
+        DocumentScanner,
+        DocumentViewer ,
         Camera,
+        OCR,
         {provide: RouteReuseStrategy, useClass: IonicRouteStrategy},
         File,
         FileOpener,

@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import {NavController} from '@ionic/angular';
+import {NavController, Platform, ToastController} from '@ionic/angular';
 import {FacturesService} from '../_services/factures.service';
 import {AuthentificationService} from '../_services/authentification.service';
+import {Camera, CameraOptions} from '@ionic-native/camera/ngx';
 
 @Component({
   selector: 'app-profile',
@@ -15,7 +16,10 @@ export class ProfilePage implements OnInit {
 
   constructor(private navCtrl:NavController,
               public facturesService:FacturesService,
-              public authService:AuthentificationService) { }
+              public authService:AuthentificationService,
+              private platform:Platform,
+              public toastController: ToastController,
+              private camera:Camera) { }
 
   ngOnInit() {
   }
@@ -52,5 +56,84 @@ export class ProfilePage implements OnInit {
     this.phone=this.phoneFormat(this.authService.localUser.phone,10);
     //à la fin du traitement, on change le mode
     this.editMode();
+  }
+
+  //cette fonction permet de changer la photo de profil
+  changePic(){
+    /*
+    //on regarde si on est sur cordova ou sur le web
+    if (this.platform.is('cordova')){
+      //Option de l'appareil photo
+      const photos: CameraOptions={
+        quality:50,
+        destinationType:this.camera.DestinationType.DATA_URL,
+        encodingType:this.camera.EncodingType.JPEG,
+        mediaType:this.camera.MediaType.PICTURE,
+        sourceType:this.camera.PictureSourceType.CAMERA,
+        allowEdit:true
+      };
+
+      //Option de récupération de photo depuis la gallerie
+      const images: CameraOptions={
+        quality:50,
+        destinationType:this.camera.DestinationType.DATA_URL,
+        encodingType:this.camera.EncodingType.JPEG,
+        mediaType:this.camera.MediaType.PICTURE,
+        sourceType:this.camera.PictureSourceType.PHOTOLIBRARY,
+        allowEdit:true
+      };
+
+      if(option=='photo'){
+        await this.getPicsFacture(photos);
+      } else {
+        await this.getPicsFacture(images);
+      }
+    } else {
+      //depuis le web, on a de suite changer la facture
+      this.factChange=true;
+      // on est sur le web --> Al Bundy
+      var today = new Date();
+      var dateNow = today.getDate()+'-'+(today.getMonth()+1)+'-'+today.getFullYear()+'_'+today.getHours()+today.getMinutes()+today.getSeconds();
+      if (option=='photo'||option=='image') {
+        //Al Bundy
+        this.newFacture.photos = this.constantes.imageBase64Land;
+        this.newFacture.photoType = 'jpeg';
+        this.newFacture.photoTitle=option+'_facture_ordinateur_boulanger_'+dateNow;
+
+        // On récupère les valeurs de l'image pour la taille ultérieurement
+        this.img.src = this.newFacture.photos;
+
+      } else if (option=='pdf') {
+        //pdf
+        this.newFacture.photos=this.constantes.pdfBase64;
+        this.newFacture.photoType='pdf';
+        this.newFacture.photoTitle='pdf_facture_ordinateur_boulanger_'+dateNow;
+      }
+    }*/
+  }
+
+  async presentToastWithOptions() {
+    const toast = await this.toastController.create({
+      position: 'bottom',
+      cssClass: "my-custom-class",
+      animated: true,
+      buttons: [
+        {
+          side: 'start',
+          icon: 'camera',
+          text: ' Take a pic',
+          handler: () => {
+            console.log('Favorite clicked');
+          }
+        }, {
+          icon: 'image',
+          text: ' Gallery',
+          handler: () => {
+            console.log('Cancel clicked');
+          }
+        }
+      ]
+    });
+    toast.present();
   }
 }

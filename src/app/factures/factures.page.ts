@@ -7,6 +7,7 @@ import {PopoverFacturesComponent} from '../_components/popover-factures/popover-
 import {FacturesArbreYear} from '../_model/facturesArbre';
 import {HttpClient} from '@angular/common/http';
 import {Storage} from '@ionic/storage';
+import {AuthentificationService} from '../_services/authentification.service';
 
 @Component({
   selector: 'app-factures',
@@ -27,6 +28,7 @@ export class FacturesPage implements OnInit {
 
   constructor(private router:Router,
               private alertCtrl:AlertController,
+              public authService:AuthentificationService,
               public facturesService:FacturesService,
               public loadingController: LoadingController,
               public popoverController: PopoverController) {
@@ -39,11 +41,24 @@ export class FacturesPage implements OnInit {
   }
 
   //cette méthode se lance à chaque ouverture de l'écran, on récupère donc toute les factures
-  ionViewWillEnter(){
+  async ionViewWillEnter(){
+    //on regarde si on doit reset les factures lorsque l'on se login
+    if(this.authService.resetFactures){
+      this.authService.resetFactures=false;
+      this.facturesService.factures= await null;
+      this.facturesService.facturesArbre=await null;
+    }
+
     //on récupère les valeurs du services
     this.factures=this.facturesService.factures;
     this.facturesArbre=this.facturesService.facturesArbre;
-    //on vérifie ques les factures sont vident avant de lancer le chargement si besoin
+    //on vérifie que les dates de mises a jour entre telephone et firebase sont ok
+    // on peut pas faire ca car sinon on ferait des appel tout le temps a firebase, trop couteux
+    //il faudra gérer ca avec les notif, quand tu change de telephone, une notif est envoyé à l'ancien qui le déconnecte
+    /*if(this.facturesService.isDateDifferent()){
+      this.onGetFactures();
+    }*/
+    //on vérifie ques les factures sont vident avant de lancer le chargement si besoin ou si on doit reset les factures
     if((this.factures==null)||((this.factures!=null)&&(this.factures.length==0))){
       this.onGetFactures();
     }

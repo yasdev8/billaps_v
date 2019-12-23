@@ -16,6 +16,7 @@ const routes: Routes = [
   { path: 'fcm', loadChildren: './fcm/fcm.module#FcmPageModule' },
   { path: 'profile', loadChildren: './profile/profile.module#ProfilePageModule' },
   { path: 'inscription', loadChildren: './inscription/inscription.module#InscriptionPageModule' },
+  { path: 'docview/:doc', loadChildren: './pages/docview/docview.module#DocviewPageModule' },
 ];
 
 @NgModule({

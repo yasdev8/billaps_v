@@ -11,6 +11,7 @@ import {Storage} from "@ionic/storage";
 import {AngularFirestore} from '@angular/fire/firestore';
 import {User} from '../_model/user';
 import {FcmService} from './fcm.service';
+import {FacturesService} from './factures.service';
 
 @Injectable({
   providedIn: 'root'
@@ -22,6 +23,9 @@ export class AuthentificationService {
   public authentificated:boolean;
 
   public token:string;
+
+  //variable permettant de donner l'information que les factures doivent être a 0
+  public resetFactures:boolean=false;
 
   //variable de l'utilisateur en localStorage
   public localUser:User=new class implements User {
@@ -283,7 +287,8 @@ export class AuthentificationService {
     //Maintenant qu'on est authentifié auprès de firebase, on va alimenter les données dans l'application
     // on va créer l'utilisateur dans le storage avec toute ses informations
     await this.createUser(success,methodConnexion);
-
+    //on supprime les factures
+    this.resetFactures=true;
     // on sauve le token
     await this.saveToken("connected");
     //on se log

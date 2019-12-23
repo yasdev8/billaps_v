@@ -69,10 +69,18 @@ export class FactureDetailPage implements OnInit {
         this.facturesService.factures[index].pdfPath=await path
       }
       //Permet d'ouvrir le pdf en utilisant le chemin de la facture sur le téléphone
-      this.fileOpener.open(this.facture.pdfPath, 'application/pdf');
+      this.fileOpener.open(this.facture.pdfPath, 'application/pdf')
+          .then(() => console.log('File is opened'))
+          .catch(e => console.log('Error opening file : ', e));;
     } else {
       alert("le pdf s'affiche normalement ... ")
     }
+  }
+
+  openPDF2(){
+    this.fileOpener.showOpenWithDialog(this.facture.pdfPath, 'application/pdf')
+        .then(() => console.log('File is opened'))
+        .catch(e => console.log('Error opening file', e));
   }
 
   sendEmail(){

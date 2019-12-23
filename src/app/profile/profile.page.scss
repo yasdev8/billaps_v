@@ -66,6 +66,15 @@
   margin-top: -76px;
 }
 
+.flex-modify-pic{
+  display: flex;
+  justify-content: center;
+  margin-top: -130px;
+  margin-left: 100px;
+  //meme taille que le height de img-box
+  height: 130px;
+}
+
 ion-col{
   display: flex;
 }
