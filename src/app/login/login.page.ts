@@ -4,7 +4,7 @@ import {AuthentificationService} from "../_services/authentification.service";
 import {FootNavService} from "../_services/foot-nav.service";
 
 //Import des connexions Facebook
-import { Platform } from '@ionic/angular';
+import {LoadingController, Platform} from '@ionic/angular';
 import { AngularFireDatabase } from '@angular/fire/database';
 import { AngularFireAuth } from '@angular/fire/auth';
 import * as firebase from 'firebase/app';
@@ -29,6 +29,7 @@ export class LoginPage implements OnInit {
   constructor(private router:Router,
               private footService:FootNavService,
               private authService:AuthentificationService,
+              public loadingController: LoadingController,
               //constructeur pour FB
               public afDB: AngularFireDatabase,
               public afAuth: AngularFireAuth,
@@ -68,8 +69,16 @@ export class LoginPage implements OnInit {
   }
 
   //login via Mail
-  loginMail() {
+  async loginMail() {
+    // on met un loader
+    const loading = await this.loadingController.create({
+      duration: 2000
+    });
+    await loading.present();
     this.authService.loginMail(this.dataUser);
+
+    //on ferme le loader
+    await loading.onDidDismiss();
   }
 
   InscriptionMail() {

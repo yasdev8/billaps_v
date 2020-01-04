@@ -5,7 +5,7 @@ import { File } from '@ionic-native/file/ngx';
 import { PhotoViewer } from '@ionic-native/photo-viewer/ngx';
 //import { ImageResizer, ImageResizerOptions } from '@ionic-native/image-resizer/ngx';
 import {DocumentViewer , DocumentViewerOptions} from "@ionic-native/document-viewer/ngx"
-import { ActionSheetController } from '@ionic/angular';
+import {ActionSheetController, AlertController} from '@ionic/angular';
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
 import {FootNavService} from '../../_services/foot-nav.service';
@@ -26,12 +26,14 @@ export class DocviewPage implements OnInit {
               private docscan: DocumentScanner,
               private file: File,
               private photoviewer: PhotoViewer,
+              public alertController: AlertController,
               private actionSheetCtrl: ActionSheetController ,
               private documentviewer : DocumentViewer,
               public ocrserv:FootNavService
   ) {
 
     this.doc = this.route.snapshot.paramMap.get('doc');
+
     //alert( this.file.externalDataDirectory  +  this.doc  ) ;
     this.file.listDir(this.file.externalDataDirectory, this.doc).then((l) => {
       this.file.listDir(this.file.externalDataDirectory, this.doc).then((l) => {
@@ -192,7 +194,7 @@ export class DocviewPage implements OnInit {
     // delete directory
   }
 
-  viewpdf() {
+  async viewpdf() {
     let allp = [];
     let path = "";
     let file = "";
@@ -206,6 +208,7 @@ export class DocviewPage implements OnInit {
 
     let mcontent = [];
     let _i = 0 ;
+
     Promise.all(allp).then((values) => {
       values.forEach( (data) => {
         _i = _i + 1 ;

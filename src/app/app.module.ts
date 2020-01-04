@@ -23,6 +23,7 @@ import { FirebaseX } from '@ionic-native/firebase-x/ngx'
 import { Facebook } from "@ionic-native/facebook/ngx";
 
 import { File } from "@ionic-native/file/ngx";
+import { FileTransfer } from "@ionic-native/file-transfer/ngx";
 import { FileOpener } from "@ionic-native/file-opener/ngx";
 import { FcmService } from './_services/fcm.service';
 import {HttpClientModule} from '@angular/common/http';
@@ -81,6 +82,7 @@ export const firebaseConfig = {
         OCR,
         {provide: RouteReuseStrategy, useClass: IonicRouteStrategy},
         File,
+        FileTransfer,
         FileOpener,
         FirebaseX,
         FcmService,

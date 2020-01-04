@@ -29,6 +29,7 @@
     "@ionic-native/facebook": "^5.15.1",
     "@ionic-native/file": "^5.15.1",
     "@ionic-native/file-opener": "^5.15.1",
+    "@ionic-native/file-transfer": "^5.19.1",
     "@ionic-native/firebase-x": "^5.15.1",
     "@ionic-native/ocr": "^5.18.0",
     "@ionic-native/photo-viewer": "^5.18.0",
@@ -47,6 +48,7 @@
     "cordova-plugin-facebook4": "^6.2.0",
     "cordova-plugin-file": "^6.0.2",
     "cordova-plugin-file-opener2": "^2.2.1",
+    "cordova-plugin-file-transfer": "^1.7.1",
     "cordova-plugin-firebasex": "^6.1.0",
     "cordova-plugin-mobile-ocr": "^3.1.1",
     "cordova-sqlite-storage": "^3.4.0",
@@ -116,7 +118,8 @@
       "cordova-plugin-document-scanner": {},
       "com-sarriaroman-photoviewer": {},
       "cordova-plugin-document-viewer": {},
-      "cordova-plugin-mobile-ocr": {}
+      "cordova-plugin-mobile-ocr": {},
+      "cordova-plugin-file-transfer": {}
     },
     "platforms": [
       "android"

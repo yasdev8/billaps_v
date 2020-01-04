@@ -14,6 +14,7 @@ import {AuthentificationService} from './authentification.service';
 import * as firebase from 'firebase/app';
 import * as pdfMake from 'pdfmake/build/pdfmake.js';
 import * as pdfFonts from 'pdfmake/build/vfs_fonts.js';
+import {tryCatch} from 'rxjs/internal-compatibility';
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 @Injectable({
@@ -161,6 +162,7 @@ export class FacturesService {
               facturesAdd[i].dateModif=await facturesAdd[i].dateModif.toDate();
             }
 
+            // on sauvegarde les factures mais pas les pdf, pour cela, il faudra les télépharger dans le détail
             await store.set("billaps:factures:" + uid, facturesAdd);
 
           } else if (dateFactTel.getTime() > querySnapshot.docs[0].data().lastDate.toDate().getTime()) {
@@ -213,30 +215,24 @@ export class FacturesService {
   async createNewFacture(newFacture:Facture, pdf){
     //Sauvegarde FireBase
     //On sauvegarde le pdf dans le système et dans firebase
-    if(this.platform.is('cordova')){
-        //on sauvegarde le fichier dans le tel puis on l'envoi à firebase
-        console.log('this.file.dataDirectory = '+this.file.dataDirectory);
-        await this.file.writeFile(this.file.dataDirectory, newFacture.photoTitle+'.pdf',newFacture.pdfBlob,{replace: true})
-            .then(async fileEntry =>{
-            newFacture.pdfPath=this.file.dataDirectory+newFacture.photoTitle+'.pdf';
-            console.log("enregistr : "+newFacture.pdfPath);
-        });
-
-      await this.uploadFirebasePdf(newFacture, pdf);
-    } else {
+    if(!this.platform.is('cordova')){
       if (newFacture.photoType!='pdf'){
+
         //si le document était initialement une photo
         pdf.getBase64(async (data) => {
           newFacture.photos = 'data:application/pdf;base64,' + data;
-
-          //on sauvegarde le fichier dans fireBase
-          await this.uploadFirebasePdf(newFacture, pdf);
         });
-      } else {
-        // si le document était initialement un pdf
-        //on sauvegarde le fichier dans fireBase
-        this.uploadFirebasePdf(newFacture,pdf);
       }
+    }
+
+
+    //on sauvegarde le fichier dans fireBase
+    try {
+
+      await this.uploadFirebasePdf(newFacture,pdf);
+    } catch (e) {
+      console.log(e)
+
     }
 
     var dateUpdate = new Date();
@@ -275,7 +271,6 @@ export class FacturesService {
     await this.storage.get("billaps:factures:" + this.authService.localUser.uid).then(async data => {
       tempFactures = await data;
     });
-
     tempFactures= await this.changeBlobFirestore(tempFactures)
 
     //on regarde si les factures existe
@@ -303,6 +298,7 @@ export class FacturesService {
         newFactu.prixTTC=newFacture.prixTTC;
         newFactu.title=newFacture.title;
 
+        console.log("12")
         //pour chaque facture, on reprend les date et non les timestamp
         factu.forEach(function (value){
           value.dateAjout=value.dateAjout.toDate();
@@ -331,17 +327,20 @@ export class FacturesService {
           console.log("Error add new factures : ", error);
         });
 
+    console.log("13")
 
     //l'enregistrement est terminé, on retourne à la page facture
     this.router.navigateByUrl('factures');
   }
 
   async uploadFirebasePdf(newFacture:Facture, pdf) {
+
+    console.log("c")
     const loading = await this.loadingController.create({
       duration: 2000
     });
 
-    const imagePath = newFacture.photoTitle + '.pdf';
+    const imagePath = newFacture.photoTitle;
 
     if(newFacture.photoType=='pdf'){
       //si c'était deja un pdf à la base, on a déja la data
@@ -352,8 +351,11 @@ export class FacturesService {
     }
 
     await loading.present();
-     this.afSG.ref(imagePath).putString(this.dataURL, 'data_url').then(async () => {
+     this.afSG.ref(imagePath).putString(this.dataURL, 'data_url').then(async (uploadSnapshot) => {
+
+
       await loading.onDidDismiss();
+
       const alert = await this.alertController.create({
         header: 'Félicitation',
         message: 'L\'envoi de la photo dans Firebase est terminé!',
@@ -564,31 +566,5 @@ export class FacturesService {
 
     finalFactures=factures;
     return finalFactures
-  }
-
-  //import de la facture depuis Firebase pour la stocker dans le téléphone
-  async importPdfFactureFromFirebase(titleFacture:string){
-    var path:string;
-
-    //on charge la facture depuis firebase
-    await firebase.storage().ref(titleFacture+'.pdf').getDownloadURL().then( async data=>{
-      //on vient de récupérer l'URL de la facture
-
-      //on crée le blob avec un fetch, le paramètre no-cors permet d'éviter l'anomalie 'Access-Control-Allow-Origin'
-      let blob = await fetch(data, {mode: 'no-cors'}).then(r => r.blob());
-
-      //on ajoute le fichier dans le telephone
-      await this.file.writeFile(this.file.dataDirectory, titleFacture+'.pdf',blob,{replace: true})
-          .then(async fileEntry =>{
-            path=await this.file.dataDirectory+titleFacture+'.pdf';
-            console.log("enregistré : "+path);
-          });
-
-    })
-        .catch(function(error) {
-          console.log("Error getDownloadURL facture firebase : ", error);
-        });
-
-    return path;
   }
 }

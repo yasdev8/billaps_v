@@ -15,11 +15,6 @@ export class FooterNavComponent implements OnInit {
   ngOnInit() {
   }
 
-  //on stocke la page de destination dans un service afin d'afficher la bonne icon
-  public getCurrentPage(){
-    return this.footService.pageCible;
-  }
-
   public navigation(pageCible:string) {
     //on met à jour la future page
     this.footService.pageCible=pageCible;

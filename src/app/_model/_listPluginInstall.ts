@@ -52,3 +52,7 @@
 //OCR ionic
 //ionic cordova plugin add cordova-plugin-mobile-ocr
 //npm install @ionic-native/ocr
+
+//file tranfer
+//ionic cordova plugin add cordova-plugin-file-transfer
+//npm install @ionic-native/file-transfer
